@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurassic Park: Biosyn Protocol - Definitive Edition</title>
+    <title>Jurassic Park: Biosyn Protocol - Definitive</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
@@ -11,59 +11,30 @@
         #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         .hidden { display: none !important; }
 
-        /* Efeito CRT / PSX Scanlines */
-        #psx-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10;
-            background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%), linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
-            background-size: 100% 100%, 100% 3px;
-        }
+        /* Overlay CRT/PSX */
+        #psx-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%), linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%); background-size: 100% 100%, 100% 3px; }
 
-        /* ==========================================
-           MENU PRINCIPAL COM FUNDO DE JOGO
-           ========================================== */
+        /* MENU */
         .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: flex; background-color: transparent; transition: opacity 0.5s ease; }
-        
-        .menu-left {
-            width: 45%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); /* Fundo transparente escuro */
-            backdrop-filter: blur(4px); /* Desfoque para ler o texto */
-            -webkit-backdrop-filter: blur(4px);
-            position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw;
-            clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%);
-            box-shadow: 10px 0 20px rgba(0,0,0,0.5);
-        }
-        .menu-right {
-            width: 55%; height: 100%; position: relative;
-            display: flex; flex-direction: column; justify-content: space-between; padding: 40px;
-            background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 100%);
-        }
-
+        .menu-left { width: 45%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw; clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%); }
+        .menu-right { width: 55%; height: 100%; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 40px; background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 100%); }
         .logo-container { margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; width: 220px; }
         .logo-circle { width: 140px; height: 140px; border-radius: 50%; background-color: #cc0000; border: 4px solid #111; box-shadow: inset 0 0 20px #000; display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: -20px; z-index: 1; }
         .logo-circle::after { content: "🦖"; font-size: 80px; transform: scaleX(-1); position: absolute; bottom: 10px; filter: brightness(0); }
         .logo-text { background-color: #ffcc00; color: #000; font-family: 'Cinzel', serif; font-weight: bold; font-size: 24px; padding: 5px 15px; border: 3px solid #111; text-align: center; width: 100%; box-sizing: border-box; z-index: 2; letter-spacing: 2px; }
-
         .menu-list { list-style: none; padding: 0; margin: 0; }
         .menu-list li { font-size: 26px; color: #ffcc00; font-weight: 600; margin-bottom: 15px; cursor: pointer; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); transition: all 0.2s; position: relative; }
         .menu-list li:hover { color: #fff; text-shadow: 0 0 10px #ffcc00; transform: translateX(10px); }
         .menu-list li::before { content: ">"; position: absolute; left: -25px; opacity: 0; color: #ffcc00; transition: opacity 0.2s; }
         .menu-list li:hover::before { opacity: 1; }
 
-        /* Sub-Menus */
-        .sub-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 60; }
-        .sub-menu h2 { font-size: 40px; color: #ffcc00; margin-bottom: 30px; font-family: 'Cinzel', serif; }
-        .sub-menu label { font-size: 20px; margin: 10px 0; display: flex; justify-content: space-between; width: 300px; }
-        .sub-menu input[type="range"] { width: 150px; }
-        .sub-menu button { margin-top: 30px; padding: 10px 30px; background: transparent; border: 2px solid #ffcc00; color: #ffcc00; font-size: 20px; cursor: pointer; }
-        .sub-menu button:hover { background: #ffcc00; color: #000; }
-
-        /* ==========================================
-           HUD DO JOGO
-           ========================================== */
+        /* HUD E MINI-MAPA */
         #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; font-family: 'VT323', monospace; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
-        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: rgba(255,255,255,0.4); }
+        #minimap { position: absolute; top: 20px; left: 20px; border: 2px solid #00ff00; background: rgba(0,0,0,0.7); border-radius: 50%; box-shadow: 0 0 10px rgba(0,255,0,0.5); }
         
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: rgba(255,255,255,0.4); }
         #interaction-prompt { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00; font-size: 20px; }
+        
         #battery-ui { position: absolute; bottom: 30px; left: 30px; background: rgba(0,0,0,0.6); padding: 10px; border: 1px solid #00ff00; }
         .battery-bar { width: 150px; height: 15px; background: #333; margin-top: 5px; border: 1px solid #00ff00; }
         #battery-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.1s, background-color 0.3s; }
@@ -71,27 +42,23 @@
         #objectives { position: absolute; top: 30px; right: 30px; background: rgba(0,0,0,0.7); padding: 15px; border-left: 4px solid #00ff00; text-align: right; font-size: 18px; }
         #act-indicator { font-size: 24px; color: #ffff00; margin-bottom: 10px; }
         #radio-ui { position: absolute; bottom: 30px; right: 30px; width: 350px; background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #ff0000; }
-
-        /* Alerta de Perigo */
         #danger-alert { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #ff0000; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px red; animation: flash 0.5s infinite alternate; }
         @keyframes flash { from { opacity: 0.3; } to { opacity: 1; } }
 
-        /* Pause Menu & Modals */
+        /* PAUSE / MODALS */
         #pause-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 40; }
         #pause-menu button { margin: 10px; padding: 10px 40px; font-size: 24px; background: transparent; border: 2px solid #fff; color: #fff; cursor: pointer; font-family: 'Oswald'; }
-        #pause-menu button:hover { background: #fff; color: #000; }
-
         #ui-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 2px solid #00ff00; padding: 30px; width: 400px; pointer-events: auto; text-align: center; z-index: 45; font-family: 'VT323', monospace; }
         #ui-modal button { background: #00ff00; color: #000; border: none; padding: 10px 20px; font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px; }
-
-        /* Cinemática */
+        
+        /* CINEMÁTICA */
         .letterbox { position: absolute; left: 0; width: 100%; height: 12vh; background: #000; z-index: 30; transition: transform 1s ease; }
         #letterbox-top { top: 0; transform: translateY(-100%); }
         #letterbox-bottom { bottom: 0; transform: translateY(100%); }
         .cinematic-active #letterbox-top { transform: translateY(0); }
         .cinematic-active #letterbox-bottom { transform: translateY(0); }
         #subtitle { position: absolute; bottom: 15vh; left: 50%; transform: translateX(-50%); width: 80%; text-align: center; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; z-index: 31; font-style: italic; font-family: 'VT323', monospace; }
-
+        
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
         .screen h1 { font-size: 60px; margin: 0; color: #ff0000; font-family: 'Cinzel', serif; }
         .screen button { margin-top: 40px; padding: 15px 30px; font-size: 24px; font-family: 'Oswald'; background: transparent; color: #ffcc00; border: 2px solid #ffcc00; cursor: pointer; }
@@ -101,12 +68,10 @@
     <div id="psx-overlay"></div>
     <div id="game-container"></div>
 
-    <!-- CINEMATIC UI -->
     <div id="letterbox-top" class="letterbox"></div>
     <div id="letterbox-bottom" class="letterbox"></div>
     <div id="subtitle" class="hidden"></div>
 
-    <!-- MENU PRINCIPAL -->
     <div id="main-menu" class="ui-layer">
         <div class="menu-left">
             <div class="logo-container">
@@ -114,31 +79,17 @@
                 <div class="logo-text">JURASSIC PARK</div>
             </div>
             <ul class="menu-list" id="menu-list">
-                <li id="btn-start" data-pt="INICIAR EPISÓDIO" data-en="BEGIN EPISODE">INICIAR EPISÓDIO</li>
-                <li id="btn-load" data-pt="CARREGAR JOGO" data-en="LOAD GAME">CARREGAR JOGO</li>
-                <li id="btn-settings" data-pt="CONFIGURAÇÕES" data-en="SETTINGS">CONFIGURAÇÕES</li>
-                <li id="btn-language" data-pt="IDIOMA" data-en="LANGUAGE">IDIOMA</li>
-                <li id="btn-quit" data-pt="SAIR" data-en="QUIT">SAIR</li>
+                <li id="btn-start">INICIAR EPISÓDIO</li>
+                <li id="btn-quit">SAIR</li>
             </ul>
         </div>
         <div class="menu-right">
             <h1 style="font-family: 'Oswald'; font-size: 32px; text-shadow: 2px 2px 4px #000;">EPISODE 1: THE INTRUDER</h1>
-            <div style="display:flex; justify-content: flex-end; gap: 30px; font-size: 20px; font-weight: bold;">
-                <span>SCENARIOS</span> <span>JOURNAL</span>
-            </div>
         </div>
     </div>
 
-    <!-- SUB MENUS -->
-    <div id="settings-menu" class="sub-menu hidden">
-        <h2>CONFIGURAÇÕES</h2>
-        <label>Sensibilidade do Mouse <input type="range" id="sens-slider" min="0.1" max="2.0" step="0.1" value="1.0"></label>
-        <label>Volume Geral <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"></label>
-        <button id="btn-close-settings">VOLTAR</button>
-    </div>
-
-    <!-- HUD DO JOGO -->
     <div id="hud" class="hidden">
+        <canvas id="minimap" width="200" height="200"></canvas>
         <div id="crosshair">+</div>
         <div id="danger-alert" class="hidden">⚠️ PERIGO ⚠️</div>
         <div id="interaction-prompt" class="hidden">Pressione [E]</div>
@@ -149,10 +100,9 @@
         </div>
 
         <div id="objectives">
-            <div id="act-indicator">ATO I</div>
+            <div id="act-indicator">ATO I - TARDE</div>
             <div id="obj-pads">Data Pads: 0/5</div>
-            <div id="obj-fuse">Fusível: Não</div>
-            <div id="obj-gate">Portão: Trancado</div>
+            <div id="obj-zone">Zona: Centro</div>
         </div>
 
         <div id="radio-ui">
@@ -161,11 +111,9 @@
         </div>
     </div>
 
-    <!-- PAUSE & MODALS -->
     <div id="pause-menu" class="hidden">
         <h1 style="font-family: 'Cinzel'; color: #ffcc00; margin-bottom: 20px;">PAUSADO</h1>
         <button id="btn-resume">CONTINUAR</button>
-        <button id="btn-save">SALVAR JOGO</button>
         <button id="btn-exit">SAIR PARA O MENU</button>
     </div>
 
@@ -202,92 +150,96 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         // ==========================================
-        // CONFIGURAÇÕES GLOBAIS E I18N
-        // ==========================================
-        const I18N = {
-            pt: { start: "INICIAR EPISÓDIO", load: "CARREGAR JOGO", settings: "CONFIGURAÇÕES", lang: "IDIOMA", quit: "SAIR" },
-            en: { start: "BEGIN EPISODE", load: "LOAD GAME", settings: "SETTINGS", lang: "LANGUAGE", quit: "QUIT" }
-        };
-        let currentLang = localStorage.getItem('jp_lang') || 'pt';
-        let mouseSensitivity = parseFloat(localStorage.getItem('jp_sens')) || 1.0;
-        let masterVolume = parseFloat(localStorage.getItem('jp_vol')) || 0.5;
-
-        // ==========================================
-        // ÁUDIO PROCEDURAL (WEB AUDIO API)
-        // ==========================================
-        class AudioManager {
-            constructor() {
-                try {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    this.masterGain = this.ctx.createGain();
-                    this.masterGain.gain.value = masterVolume;
-                    this.masterGain.connect(this.ctx.destination);
-                    this.startRain();
-                } catch(e) { console.warn("AudioContext não suportado"); }
-            }
-
-            updateVolume(vol) { if(this.masterGain) this.masterGain.gain.value = vol; }
-
-            startRain() {
-                if(!this.ctx) return;
-                const bufferSize = this.ctx.sampleRate * 2;
-                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
-                const noise = this.ctx.createBufferSource();
-                noise.buffer = buffer; noise.loop = true;
-                
-                const filter = this.ctx.createBiquadFilter();
-                filter.type = 'lowpass'; filter.frequency.value = 1000;
-
-                noise.connect(filter); filter.connect(this.masterGain);
-                noise.start();
-            }
-
-            playThunder() {
-                if(!this.ctx) return;
-                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(50, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 1.5);
-                gain.gain.setValueAtTime(1, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
-                osc.connect(gain); gain.connect(this.masterGain);
-                osc.start(); osc.stop(this.ctx.currentTime + 1.5);
-            }
-
-            playRoar() {
-                if(!this.ctx) return;
-                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-                osc.type = 'square'; osc.frequency.setValueAtTime(100, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 1.0);
-                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.0);
-                osc.connect(gain); gain.connect(this.masterGain);
-                osc.start(); osc.stop(this.ctx.currentTime + 1.0);
-            }
-        }
-
-        // ==========================================
-        // ESTADO DO JOGO
+        // ESTADO
         // ==========================================
         class GameState {
             constructor() {
-                this.datapads = 0; this.hasFuse = false; this.gateOpen = false;
-                this.isGameOver = false; this.isWin = false; this.isPaused = false;
-                this.isCinematic = false; this.isMenuActive = true;
-                this.act = 1;
+                this.datapads = 0; this.isGameOver = false; this.isWin = false;
+                this.isPaused = false; this.isCinematic = false; this.isMenuActive = true;
+                this.act = 1; // 1: Tarde, 2: Entardecer, 3: Noite
             }
         }
 
         // ==========================================
-        // AMBIENTE
+        // MINI-MAPA
+        // ==========================================
+        class Minimap {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+            }
+
+            draw(playerPos, playerRotation, entities, items, shipPos) {
+                this.ctx.clearRect(0, 0, 200, 200);
+                
+                // Fundo do radar
+                this.ctx.fillStyle = 'rgba(0, 50, 0, 0.5)';
+                this.ctx.beginPath();
+                this.ctx.arc(100, 100, 95, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // Grade
+                this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)';
+                this.ctx.beginPath();
+                this.ctx.moveTo(100, 0); this.ctx.lineTo(100, 200);
+                this.ctx.moveTo(0, 100); this.ctx.lineTo(200, 100);
+                this.ctx.stroke();
+
+                const mapScale = 0.6; // Ajuste para caber o mapa no radar
+
+                // Desenhar Navio (Objetivo)
+                this.drawPoint(shipPos, 'blue', 6, mapScale);
+
+                // Desenhar Itens
+                items.forEach(item => this.drawPoint(item.position, 'lime', 3, mapScale));
+
+                // Desenhar Inimigos
+                entities.forEach(ent => {
+                    if(ent.group && ent.group.parent) {
+                        this.drawPoint(ent.group.position, 'red', ent.constructor.name === 'TRexAI' ? 6 : 4, mapScale);
+                    }
+                });
+
+                // Desenhar Jogador (Seta)
+                this.ctx.save();
+                this.ctx.translate(100, 100); // Centro do radar
+                this.ctx.rotate(-playerRotation); // Rotaciona a seta
+                
+                this.ctx.fillStyle = '#fff';
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -8);   // Ponta
+                this.ctx.lineTo(5, 8);    // Base Direita
+                this.ctx.lineTo(-5, 8);   // Base Esquerda
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.restore();
+            }
+
+            drawPoint(pos, color, size, scale) {
+                // Limita a posição no mapa
+                let x = pos.x * scale;
+                let z = pos.z * scale;
+                if(x > 90) x = 90; if(x < -90) x = -90;
+                if(z > 90) z = 90; if(z < -90) z = -90;
+
+                // Mapeia para o canvas (centro é 100,100)
+                const cx = 100 + x;
+                const cy = 100 + z;
+
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.arc(cx, cy, size, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+
+        // ==========================================
+        // AMBIENTE (MAPA)
         // ==========================================
         class Environment {
             constructor(scene, state, narrative) {
                 this.scene = scene; this.state = state; this.narrative = narrative;
                 this.collidables = []; this.collectibles = [];
-                this.fuseBoxPos = new THREE.Vector3(15, 0, -20);
                 
                 this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
                 this.sunLight.castShadow = true;
@@ -296,218 +248,111 @@
                 this.hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x444444, 1);
                 this.scene.add(this.hemiLight);
 
-                this.rainCount = 5000;
-                const rainGeo = new THREE.BufferGeometry();
-                const rainPos = new Float32Array(this.rainCount * 3);
-                for(let i=0; i<this.rainCount*3; i+=3) {
-                    rainPos[i] = (Math.random()-0.5)*100; rainPos[i+1] = Math.random()*50; rainPos[i+2] = (Math.random()-0.5)*100;
-                }
-                rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
-                const rainMat = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.1, transparent: true, opacity: 0.6 });
-                this.rain = new THREE.Points(rainGeo, rainMat);
-                this.scene.add(this.rain);
+                this.scene.fog = new THREE.FogExp2(0x87CEEB, 0.02);
 
-                this.buildTerrain(); this.buildProps(); this.buildItems();
+                this.buildTerrain();
+                this.buildZones();
+                this.buildItems();
             }
 
             buildTerrain() {
-                const geo = new THREE.PlaneGeometry(200, 200, 64, 64);
+                const geo = new THREE.PlaneGeometry(400, 400, 64, 64);
                 const pos = geo.attributes.position;
                 for (let i = 0; i < pos.count; i++) {
                     const x = pos.getX(i); const y = pos.getY(i);
-                    pos.setZ(i, Math.sin(x*0.05)*Math.cos(y*0.05)*3);
+                    let z = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 2;
+                    if (x > 50 && y < -50) z -= 10; // Abismo Zona 4
+                    pos.setZ(i, z);
                 }
                 geo.computeVertexNormals();
                 const mat = new THREE.MeshStandardMaterial({ color: 0x2e4a25, roughness: 1, flatShading: true });
                 const mesh = new THREE.Mesh(geo, mat);
-                mesh.rotation.x = -Math.PI/2; mesh.receiveShadow = true;
+                mesh.rotation.x = -Math.PI / 2; mesh.receiveShadow = true;
                 this.scene.add(mesh);
             }
 
-            buildProps() {
-                const treeMat = new THREE.MeshStandardMaterial({ color: 0x1a3a10, flatShading: true });
-                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314 });
-                const wallMat = new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true });
+            buildZones() {
+                // Zona 1: Vulcão
+                const volcano = new THREE.Mesh(new THREE.ConeGeometry(60, 50, 16), new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true }));
+                volcano.position.set(0, 0, -150); this.scene.add(volcano);
 
-                for(let i=0; i<50; i++) {
-                    const x = (Math.random()-0.5)*160; const z = (Math.random()-0.5)*160;
-                    if (Math.sqrt(x*x+z*z) < 15) continue;
-                    const tree = new THREE.Group();
-                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.8,4), trunkMat);
-                    trunk.position.y = 2; trunk.castShadow = true; tree.add(trunk);
-                    const leaves = new THREE.Mesh(new THREE.ConeGeometry(3,6,5), treeMat);
-                    leaves.position.y = 6; leaves.castShadow = true; tree.add(leaves);
-                    tree.position.set(x, Math.sin(x*0.05)*Math.cos(z*0.05)*3, z);
-                    this.scene.add(tree);
-                    this.collidables.push(new THREE.Box3().setFromObject(trunk));
+                // Zona 2: Cânions
+                const wallMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true });
+                for (let i = 0; i < 6; i++) {
+                    const wall = new THREE.Mesh(new THREE.BoxGeometry(20, 30, 80), wallMat);
+                    wall.position.set(-100 + (i * 25), 10, 0); wall.castShadow = true;
+                    this.scene.add(wall);
+                    this.collidables.push(new THREE.Box3().setFromObject(wall));
                 }
 
-                const ruin = new THREE.Group();
-                const wall1 = new THREE.Mesh(new THREE.BoxGeometry(10, 6, 1), wallMat); wall1.position.set(0, 3, -5); wall1.castShadow = true;
-                const wall2 = new THREE.Mesh(new THREE.BoxGeometry(1, 6, 10), wallMat); wall2.position.set(-5, 3, 0); wall2.castShadow = true;
-                ruin.add(wall1); ruin.add(wall2); ruin.position.set(-30, 0, 30); this.scene.add(ruin);
-                this.collidables.push(new THREE.Box3().setFromObject(ruin));
+                // Zona 3: Centro de Visitantes
+                const center = new THREE.Group();
+                const mainBuild = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 15), new THREE.MeshStandardMaterial({ color: 0xccbbaa }));
+                mainBuild.position.y = 5; center.add(mainBuild);
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(18, 8, 4), new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true }));
+                roof.position.y = 14; roof.rotation.y = Math.PI/4; center.add(roof);
+                center.position.set(0, 0, 50); this.scene.add(center);
+                this.collidables.push(new THREE.Box3().setFromObject(mainBuild));
 
-                for(let i=0; i<4; i++) {
-                    const px = (Math.random()-0.5)*60; const pz = (Math.random()-0.5)*60;
-                    const py = Math.sin(px*0.05)*Math.cos(pz*0.05)*3;
-                    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,8), new THREE.MeshStandardMaterial({color:0x333333}));
-                    pole.position.set(px, py+4, pz); this.scene.add(pole);
-                    const light = new THREE.PointLight(0xffaa00, 2, 20);
-                    light.position.set(px, py+8, pz); this.scene.add(light);
-                    setInterval(() => { light.intensity = Math.random() > 0.8 ? 2 : 0; }, Math.random()*200+100);
-                }
+                // Zona 4: Lagoa e Navio
+                const water = new THREE.Mesh(new THREE.PlaneGeometry(150, 150), new THREE.MeshStandardMaterial({ color: 0x0a1128 }));
+                water.rotation.x = -Math.PI / 2; water.position.set(120, -2, 120); this.scene.add(water);
+                const ship = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 40), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+                ship.position.set(120, 3, 160); this.scene.add(ship);
+                this.shipPos = ship.position.clone();
             }
 
             buildItems() {
                 const padGeo = new THREE.BoxGeometry(0.4, 0.5, 0.1);
                 const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
-                for(let i=0; i<5; i++) {
+                const padPositions = [
+                    new THREE.Vector3(0, 1, 50),     // Zona 3
+                    new THREE.Vector3(-90, 1, 0),    // Zona 2
+                    new THREE.Vector3(0, 1, -130),   // Zona 1
+                    new THREE.Vector3(100, 1, 100),  // Zona 4
+                    new THREE.Vector3(30, 1, 0)      // Meio
+                ];
+
+                padPositions.forEach((pos, i) => {
                     const pad = new THREE.Mesh(padGeo, padMat);
-                    const x = (Math.random()-0.5)*80; const z = (Math.random()-0.5)*80;
-                    pad.position.set(x, Math.sin(x*0.05)*Math.cos(z*0.05)*3 + 1, z);
+                    pad.position.copy(pos);
                     pad.userData = { type: 'datapad', id: i+1 };
                     this.scene.add(pad); this.collectibles.push(pad);
-                }
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.6), new THREE.MeshStandardMaterial({color:0xffff00, emissive:0xaaaa00}));
-                fuse.position.set(20, Math.sin(20*0.05)*Math.cos(10*0.05)*3 + 1, 10);
-                fuse.rotation.z = Math.PI/2; fuse.userData = { type: 'fuse' };
-                this.scene.add(fuse); this.collectibles.push(fuse);
+                });
             }
 
             updateLighting() {
                 if (this.state.act === 1) {
-                    this.scene.background = new THREE.Color(0x87CEEB); this.scene.fog = new THREE.FogExp2(0x87CEEB, 0.01);
-                    this.sunLight.color.setHex(0xffffee); this.sunLight.intensity = 2; this.hemiLight.intensity = 1;
-                    this.rain.visible = false;
+                    this.scene.background = new THREE.Color(0x87CEEB); this.scene.fog.color.setHex(0x87CEEB); this.scene.fog.density = 0.01;
+                    this.sunLight.color.setHex(0xffffee); this.sunLight.intensity = 2;
                 } else if (this.state.act === 2) {
-                    this.scene.background = new THREE.Color(0xff8c00); this.scene.fog = new THREE.FogExp2(0xff8c00, 0.02);
-                    this.sunLight.color.setHex(0xffaa00); this.sunLight.intensity = 1; this.hemiLight.intensity = 0.5;
-                    this.rain.visible = true;
+                    this.scene.background = new THREE.Color(0xff8c00); this.scene.fog.color.setHex(0xff8c00); this.scene.fog.density = 0.02;
+                    this.sunLight.color.setHex(0xffaa00); this.sunLight.intensity = 1;
                 } else {
-                    this.scene.background = new THREE.Color(0x050510); this.scene.fog = new THREE.FogExp2(0x050510, 0.04);
-                    this.sunLight.color.setHex(0x334466); this.sunLight.intensity = 0.2; this.hemiLight.intensity = 0.1;
-                    this.rain.visible = true;
-                }
-            }
-
-            update(time, delta) {
-                this.collectibles.forEach(item => {
-                    item.rotation.y = time * 2;
-                    item.position.y = Math.sin(item.position.x*0.05)*Math.cos(item.position.z*0.05)*3 + 1 + Math.sin(time*4)*0.2;
-                });
-                if(this.rain.visible) {
-                    const pos = this.rain.geometry.attributes.position.array;
-                    for(let i=1; i<this.rainCount*3; i+=3) {
-                        pos[i] -= 30 * delta; if(pos[i] < 0) pos[i] = 50;
-                    }
-                    this.rain.geometry.attributes.position.needsUpdate = true;
+                    this.scene.background = new THREE.Color(0x050510); this.scene.fog.color.setHex(0x050510); this.scene.fog.density = 0.04;
+                    this.sunLight.color.setHex(0x334466); this.sunLight.intensity = 0.2;
                 }
             }
         }
 
         // ==========================================
-        // DINOSSAUROS
-        // ==========================================
-        class BaseDino {
-            constructor(scene, player, state, url, scale, speed, vision) {
-                this.scene = scene; this.player = player; this.state = state;
-                this.group = new THREE.Group(); this.mixer = null;
-                this.speed = speed; this.patrolSpeed = 2; this.vision = vision;
-                this.direction = new THREE.Vector3(); this.targetNode = new THREE.Vector3();
-                this.aiState = 'PATROL'; this.roarTimer = 0; this.cameraShake = 0;
-                
-                this.pickNewTarget();
-                this.raycaster = new THREE.Raycaster(); this.downVector = new THREE.Vector3(0,-1,0);
-
-                const loader = new GLTFLoader();
-                loader.load(url, (gltf) => {
-                    this.model = gltf.scene; this.model.scale.set(scale, scale, scale);
-                    this.model.traverse(c => { if(c.isMesh) { c.castShadow = true; } });
-                    this.group.add(this.model);
-                    if(gltf.animations.length) {
-                        this.mixer = new THREE.AnimationMixer(this.model);
-                        this.mixer.clipAction(gltf.animations[0]).play();
-                    }
-                }, undefined, () => {
-                    const box = new THREE.Mesh(new THREE.BoxGeometry(2,3,4), new THREE.MeshBasicMaterial({color:0xff0000}));
-                    box.position.y = 1.5; this.group.add(box);
-                });
-                this.scene.add(this.group);
-            }
-
-            pickNewTarget() {
-                if(this.constructor.name === 'RaptorAI' && this.aiState === 'CHASE') {
-                    const offset = new THREE.Vector3((Math.random()-0.5)*20, 0, (Math.random()-0.5)*20);
-                    this.targetNode.copy(this.player.camera.position).add(offset);
-                } else {
-                    const x = (Math.random()-0.5)*80; const z = (Math.random()-0.5)*80;
-                    this.targetNode.set(x, 0, z);
-                }
-            }
-
-            update(delta, time, audio) {
-                if (this.player.state.isGameOver || !this.group.parent) return;
-                if (this.mixer) this.mixer.update(delta);
-
-                const dist = this.group.position.distanceTo(this.player.camera.position);
-                const isHiding = this.player.isCrouching && !this.player.isFlashlightOn;
-                let currentVision = isHiding ? 0 : this.vision;
-
-                if (dist < currentVision) this.aiState = 'CHASE';
-                else if (dist > currentVision * 2) this.aiState = 'PATROL';
-
-                if (this.aiState === 'CHASE' && dist < 15) {
-                    document.getElementById('danger-alert').classList.remove('hidden');
-                    if (this.constructor.name === 'TRexAI' && this.roarTimer <= 0) {
-                        audio.playRoar(); this.roarTimer = 5; this.cameraShake = 1.0;
-                    }
-                } else {
-                    document.getElementById('danger-alert').classList.add('hidden');
-                }
-                if (this.roarTimer > 0) this.roarTimer -= delta;
-
-                if (this.aiState === 'CHASE') {
-                    this.direction.subVectors(this.player.camera.position, this.group.position).setY(0).normalize();
-                    this.group.position.addScaledVector(this.direction, this.speed * delta);
-                    if (dist < 3) {
-                        this.player.state.isGameOver = true;
-                        document.getElementById('game-over-screen').classList.remove('hidden');
-                        document.exitPointerLock();
-                    }
-                } else {
-                    this.direction.subVectors(this.targetNode, this.group.position).setY(0);
-                    if (this.direction.length() < 2) this.pickNewTarget();
-                    else {
-                        this.direction.normalize();
-                        this.group.position.addScaledVector(this.direction, this.patrolSpeed * delta);
-                    }
-                }
-
-                if (this.direction.length() > 0) {
-                    this.group.rotation.y = Math.atan2(this.direction.x, this.direction.z);
-                }
-
-                this.raycaster.set(this.group.position.clone().setY(50), this.downVector);
-                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
-                if (intersects.length > 0) this.group.position.y = intersects[0].point.y;
-            }
-        }
-        class RaptorAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './archie_the_velociraptor.glb', 1.0, 9, 15); this.group.position.set(20,0,20); } }
-        class TRexAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './t_rex.glb', 1.5, 6, 25); this.group.position.set(0,0,-40); } }
-
-        // ==========================================
-        // JOGADOR
+        // JOGADOR COM CORPO FPS
         // ==========================================
         class Player {
             constructor(camera, scene, collidables, state) {
                 this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = state;
                 this.controls = new PointerLockControls(camera, document.body);
+                
+                // Vetores de movimento (Física)
                 this.velocity = new THREE.Vector3();
+                this.direction = new THREE.Vector3();
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
-                this.isCrouching = false; this.isMoving = false;
+                this.isCrouching = false; this.isSprinting = false; this.isMoving = false;
+                this.bobTimer = 0;
+                
                 this.playerBox = new THREE.Box3(); this.hitboxSize = new THREE.Vector3(1,2,1);
 
+                // Lanterna
                 this.flashlight = new THREE.SpotLight(0xffffff, 15, 45, Math.PI / 5, 0.4, 1.5);
                 this.flashlight.castShadow = true; this.camera.add(this.flashlight);
                 this.flashlightTarget = new THREE.Object3D(); this.scene.add(this.flashlightTarget);
@@ -516,7 +361,26 @@
                 this.battery = 100; this.isFlashlightOn = false;
                 this.batteryFill = document.getElementById('battery-fill');
 
-                this.raycaster = new THREE.Raycaster(); this.downVector = new THREE.Vector3(0,-1,0);
+                // MODELO DO CORPO (Primeira Pessoa)
+                this.bodyGroup = new THREE.Group();
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0xd2a679 });
+                const gloveMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+                
+                // Braço Direito (Lanterna)
+                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), skinMat);
+                armR.position.set(0.4, -0.5, -0.5); armR.rotation.x = -0.5;
+                this.bodyGroup.add(armR);
+                const flashlightMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 0.4), new THREE.MeshStandardMaterial({ color: 0x888888 }));
+                flashlightMesh.position.set(0, -0.2, -0.2); flashlightMesh.rotation.x = Math.PI/2;
+                armR.add(flashlightMesh);
+
+                // Braço Esquerdo
+                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), skinMat);
+                armL.position.set(-0.4, -0.5, -0.5); armL.rotation.x = -0.5;
+                this.bodyGroup.add(armL);
+
+                this.camera.add(this.bodyGroup);
+                this.bodyGroup.position.y = 0.2; // Ajuste para aparecer na tela
 
                 document.addEventListener('keydown', e => this.onKeyDown(e));
                 document.addEventListener('keyup', e => this.onKeyUp(e));
@@ -529,7 +393,8 @@
                     case 'KeyS': this.moveB = true; break;
                     case 'KeyA': this.moveL = true; break;
                     case 'KeyD': this.moveR = true; break;
-                    case 'ShiftLeft': this.isCrouching = true; this.camera.position.y = 1; this.hitboxSize.y = 1; break;
+                    case 'ShiftLeft': this.isSprinting = true; break;
+                    case 'ControlLeft': case 'KeyC': this.isCrouching = true; this.camera.position.y = 1; this.hitboxSize.y = 1; break;
                     case 'KeyF': if(this.battery > 0) { this.isFlashlightOn = !this.isFlashlightOn; this.flashlight.visible = this.isFlashlightOn; } break;
                     case 'Escape': if(!this.state.isCinematic) { document.getElementById('pause-menu').classList.remove('hidden'); this.state.isPaused = true; document.exitPointerLock(); } break;
                 }
@@ -541,38 +406,64 @@
                     case 'KeyS': this.moveB = false; break;
                     case 'KeyA': this.moveL = false; break;
                     case 'KeyD': this.moveR = false; break;
-                    case 'ShiftLeft': this.isCrouching = false; this.camera.position.y = 2; this.hitboxSize.y = 2; break;
+                    case 'ShiftLeft': this.isSprinting = false; break;
+                    case 'ControlLeft': case 'KeyC': this.isCrouching = false; this.camera.position.y = 2; this.hitboxSize.y = 2; break;
                 }
             }
 
             update(delta, time, env, narrative) {
                 if (!this.controls.isLocked || this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
 
-                const damping = 10.0;
-                this.velocity.x -= this.velocity.x * damping * delta;
-                this.velocity.z -= this.velocity.z * damping * delta;
+                // Lógica de Movimento (Física)
+                this.velocity.x -= this.velocity.x * 10.0 * delta;
+                this.velocity.z -= this.velocity.z * 10.0 * delta;
 
-                const dirZ = Number(this.moveF) - Number(this.moveB);
-                const dirX = Number(this.moveR) - Number(this.moveL);
-                const speed = this.isCrouching ? 10.0 : 25.0;
+                this.direction.z = Number(this.moveF) - Number(this.moveB);
+                this.direction.x = Number(this.moveR) - Number(this.moveL);
+                this.direction.normalize();
 
-                this.velocity.z -= dirZ * speed * delta;
-                this.velocity.x -= dirX * speed * delta;
-                this.isMoving = (dirZ !== 0 || dirX !== 0);
+                let speed = 30.0;
+                if (this.isSprinting && !this.isCrouching) speed = 50.0;
+                if (this.isCrouching) speed = 10.0;
 
+                this.isMoving = this.moveF || this.moveB || this.moveL || this.moveR;
+
+                if (this.moveF || this.moveB) this.velocity.z -= this.direction.z * speed * delta;
+                if (this.moveL || this.moveR) this.velocity.x -= this.direction.x * speed * delta;
+
+                // Aplica o movimento usando a direção da câmera (Corrige o bug do WASD)
                 const oldPos = this.camera.position.clone();
-                this.controls.moveRight(-this.velocity.x * delta * mouseSensitivity);
-                this.controls.moveForward(-this.velocity.z * delta * mouseSensitivity);
+                this.controls.moveRight(-this.velocity.x * delta);
+                this.controls.moveForward(-this.velocity.z * delta);
 
+                // Colisão AABB
                 this.playerBox.setFromCenterAndSize(new THREE.Vector3(this.camera.position.x, this.camera.position.y - 1, this.camera.position.z), this.hitboxSize);
                 let collision = false;
                 this.collidables.forEach(box => { if (this.playerBox.intersectsBox(box)) collision = true; });
                 if (collision) { this.camera.position.copy(oldPos); this.velocity.set(0,0,0); }
 
-                this.raycaster.set(this.camera.position.clone().setY(this.camera.position.y + 5), this.downVector);
-                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
-                if (intersects.length > 0) this.camera.position.y = intersects[0].point.y + (this.isCrouching ? 1 : 2);
+                // Colar no chão (Simples)
+                this.camera.position.y = this.isCrouching ? 1 : 2;
 
+                // Animação do Corpo (Headbob e Braços)
+                if (this.isMoving) {
+                    const bobSpeed = this.isSprinting ? 20 : 10;
+                    this.bobTimer += delta * bobSpeed;
+                    
+                    // Headbob (Câmera balançando)
+                    this.camera.position.y += Math.sin(this.bobTimer) * 0.05;
+                    
+                    // Braços balançando
+                    this.bodyGroup.children[0].rotation.x = -0.5 + Math.sin(this.bobTimer) * 0.1;
+                    this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.1;
+                } else {
+                    // Idle (Respiração)
+                    this.bobTimer += delta * 2;
+                    this.bodyGroup.children[0].rotation.x = -0.5 + Math.sin(this.bobTimer) * 0.02;
+                    this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.02;
+                }
+
+                // Lanterna
                 if (this.isFlashlightOn && this.battery > 0) {
                     const forward = new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion);
                     const targetPos = this.camera.position.clone().add(forward.multiplyScalar(10));
@@ -594,22 +485,25 @@
 
                 for (let i = env.collectibles.length - 1; i >= 0; i--) {
                     const item = env.collectibles[i];
-                    if (this.camera.position.distanceTo(item.position) < 3) {
+                    if (this.camera.position.distanceTo(item.position) < 4) {
                         canInteract = true; prompt.classList.remove('hidden');
                         if (window.keys['KeyE']) {
-                            if (item.userData.type === 'datapad') narrative.showDataPad(item.userData.id);
-                            else if (item.userData.type === 'fuse') { this.state.hasFuse = true; narrative.updateHUD(); }
+                            narrative.showDataPad(item.userData.id);
                             env.scene.remove(item); env.collectibles.splice(i, 1);
                             window.keys['KeyE'] = false; break;
                         }
                     }
                 }
 
-                if (this.camera.position.distanceTo(env.fuseBoxPos) < 3.5) {
-                    canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Colocar Fusível";
+                if (this.camera.position.distanceTo(env.shipPos) < 15) {
+                    canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Embarcar e Escapar";
                     if (window.keys['KeyE']) {
-                        if (this.state.hasFuse && !this.state.gateOpen) {
-                            this.state.gateOpen = true; narrative.updateHUD(); narrative.triggerRadio("Energia restaurada! O portão abriu.");
+                        if (this.state.datapads >= 5) {
+                            this.state.isWin = true;
+                            document.getElementById('win-screen').classList.remove('hidden');
+                            document.exitPointerLock();
+                        } else {
+                            narrative.triggerRadio("Ainda faltam dados. Não posso sair sem eles.");
                         }
                         window.keys['KeyE'] = false;
                     }
@@ -619,12 +513,103 @@
         }
 
         // ==========================================
+        // IA DOS DINOSSAUROS
+        // ==========================================
+        class BaseDino {
+            constructor(scene, player, state, url, scale, speed, vision, spawnPos) {
+                this.scene = scene; this.player = player; this.state = state;
+                this.group = new THREE.Group(); this.mixer = null;
+                this.speed = speed; this.patrolSpeed = 3; this.vision = vision;
+                this.direction = new THREE.Vector3(); this.targetNode = new THREE.Vector3();
+                this.aiState = 'PATROL'; this.roarTimer = 0; this.cameraShake = 0;
+                
+                this.group.position.copy(spawnPos);
+                this.pickNewTarget();
+                this.raycaster = new THREE.Raycaster(); this.downVector = new THREE.Vector3(0,-1,0);
+
+                const loader = new GLTFLoader();
+                loader.load(url, (gltf) => {
+                    this.model = gltf.scene; this.model.scale.set(scale, scale, scale);
+                    this.model.traverse(c => { if(c.isMesh) { c.castShadow = true; } });
+                    this.group.add(this.model);
+                    if(gltf.animations.length) {
+                        this.mixer = new THREE.AnimationMixer(this.model);
+                        this.mixer.clipAction(gltf.animations[0]).play();
+                    }
+                });
+                this.scene.add(this.group);
+            }
+
+            pickNewTarget() {
+                if(this.constructor.name === 'RaptorAI' && this.aiState === 'CHASE') {
+                    const offset = new THREE.Vector3((Math.random()-0.5)*15, 0, (Math.random()-0.5)*15);
+                    this.targetNode.copy(this.player.camera.position).add(offset);
+                } else {
+                    const x = (Math.random()-0.5)*100; const z = (Math.random()-0.5)*100;
+                    this.targetNode.set(x, 0, z);
+                }
+            }
+
+            update(delta, time, audio) {
+                if (this.player.state.isGameOver || !this.group.parent) return;
+                if (this.mixer) this.mixer.update(delta);
+
+                const dist = this.group.position.distanceTo(this.player.camera.position);
+                const isHiding = this.player.isCrouching && !this.player.isFlashlightOn;
+                
+                // Se o jogador estiver correndo, o Raptor ouve de mais longe
+                let currentVision = isHiding ? 0 : this.vision;
+                if (this.player.isSprinting) currentVision *= 1.5;
+
+                if (dist < currentVision) this.aiState = 'CHASE';
+                else if (dist > currentVision * 2) this.aiState = 'PATROL';
+
+                if (this.aiState === 'CHASE' && dist < 20) {
+                    document.getElementById('danger-alert').classList.remove('hidden');
+                    if (this.constructor.name === 'TRexAI' && this.roarTimer <= 0) {
+                        audio.playRoar(); this.roarTimer = 6; this.cameraShake = 1.5;
+                    }
+                } else {
+                    document.getElementById('danger-alert').classList.add('hidden');
+                }
+                if (this.roarTimer > 0) this.roarTimer -= delta;
+
+                if (this.aiState === 'CHASE') {
+                    this.direction.subVectors(this.player.camera.position, this.group.position).setY(0).normalize();
+                    this.group.position.addScaledVector(this.direction, this.speed * delta);
+                    if (dist < 4) {
+                        this.player.state.isGameOver = true;
+                        document.getElementById('game-over-screen').classList.remove('hidden');
+                        document.exitPointerLock();
+                    }
+                } else {
+                    this.direction.subVectors(this.targetNode, this.group.position).setY(0);
+                    if (this.direction.length() < 5) this.pickNewTarget();
+                    else {
+                        this.direction.normalize();
+                        this.group.position.addScaledVector(this.direction, this.patrolSpeed * delta);
+                    }
+                }
+
+                if (this.direction.length() > 0) {
+                    this.group.rotation.y = Math.atan2(this.direction.x, this.direction.z);
+                }
+
+                // Colar no chão
+                this.group.position.y = 0; 
+            }
+        }
+        
+        class RaptorAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './archie_the_velociraptor.glb', 1.0, 9, 18, new THREE.Vector3(-90, 0, 0)); } }
+        class TRexAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './t_rex.glb', 1.5, 7, 30, new THREE.Vector3(0, 0, 80)); } }
+
+        // ==========================================
         // NARRATIVA
         // ==========================================
         class NarrativeManager {
             constructor(state) {
                 this.state = state; this.radioText = document.getElementById('radio-text');
-                this.modalUI = document.getElementById('ui-modal'); this.subtitle = document.getElementById('subtitle');
+                this.modalUI = document.getElementById('ui-modal');
                 this.objPads = document.getElementById('obj-pads'); this.actIndicator = document.getElementById('act-indicator');
             }
             updateHUD() {
@@ -637,10 +622,26 @@
             showDataPad(id) {
                 if(this.state.datapads >= 5) return;
                 this.state.datapads++; this.updateHUD();
-                this.modalUI.querySelector('#modal-text').innerText = `LOG 0${id}: Dados recuperados com sucesso.`;
+                
+                const lore = [
+                    "LOG 1: O sistema de segurança principal caiu. O T-Rex está solto na Ilha Norte.",
+                    "LOG 2: O Raptor fêmea Alpha está caçando nos Cânions. Ela ataca pelo som.",
+                    "LOG 3: O Centro de Visitantes foi abandonado. A energia do portão está desligada.",
+                    "LOG 4: Há um navio cargueiro atracado no East Dock. É a única saída.",
+                    "LOG 5: Se você está lendo isso, leve os dados para a Biosyn e não olhe para trás."
+                ];
+                
+                this.modalUI.querySelector('#modal-text').innerText = lore[id - 1];
                 this.modalUI.classList.remove('hidden'); document.exitPointerLock();
-                if(this.state.datapads === 2) { this.state.act = 2; this.updateHUD(); }
-                if(this.state.datapads === 4) { this.state.act = 3; this.updateHUD(); }
+                
+                if(this.state.datapads === 2) { 
+                    this.state.act = 2; this.updateHUD(); 
+                    this.triggerRadio("O sol está se pondo. Sensores detectaram o Raptor na área."); 
+                }
+                if(this.state.datapads === 4) { 
+                    this.state.act = 3; this.updateHUD(); 
+                    this.triggerRadio("A noite chegou. O T-Rex está solto. Ele vê movimento."); 
+                }
             }
         }
 
@@ -655,10 +656,7 @@
             constructor() {
                 this.scene = new THREE.Scene();
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 300);
-                
-                // Posição inicial para o Menu (visão aérea do mapa)
-                this.camera.position.set(30, 15, 30);
-                this.camera.lookAt(0, 0, 0);
+                this.camera.position.set(30, 50, 80); // Câmera do Menu
 
                 this.renderer = new THREE.WebGLRenderer({ antialias: false });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -668,8 +666,8 @@
 
                 this.clock = new THREE.Clock(); this.state = new GameState();
                 this.audio = null;
+                this.minimap = new Minimap('minimap');
                 
-                // Inicializa o mundo imediatamente (para aparecer no fundo do menu)
                 this.narrative = new NarrativeManager(this.state);
                 this.environment = new Environment(this.scene, this.state, this.narrative);
                 this.player = new Player(this.camera, this.scene, this.environment.collidables, this.state);
@@ -681,39 +679,9 @@
             }
 
             initUI() {
-                const updateLang = () => {
-                    document.getElementById('btn-start').innerText = I18N[currentLang].start;
-                    document.getElementById('btn-load').innerText = I18N[currentLang].load;
-                    document.getElementById('btn-settings').innerText = I18N[currentLang].settings;
-                    document.getElementById('btn-language').innerText = I18N[currentLang].lang;
-                    document.getElementById('btn-quit').innerText = I18N[currentLang].quit;
-                };
-                updateLang();
-
-                document.getElementById('btn-start').onclick = () => this.startGame(false);
-                document.getElementById('btn-language').onclick = () => { currentLang = currentLang === 'pt' ? 'en' : 'pt'; localStorage.setItem('jp_lang', currentLang); updateLang(); };
-                document.getElementById('btn-settings').onclick = () => { document.getElementById('settings-menu').classList.remove('hidden'); };
-                document.getElementById('btn-close-settings').onclick = () => { document.getElementById('settings-menu').classList.add('hidden'); };
+                document.getElementById('btn-start').onclick = () => this.startGame();
                 document.getElementById('btn-quit').onclick = () => { if(confirm("Deseja realmente sair?")) window.close(); };
-                
-                document.getElementById('sens-slider').oninput = (e) => { mouseSensitivity = parseFloat(e.target.value); localStorage.setItem('jp_sens', mouseSensitivity); };
-                document.getElementById('vol-slider').oninput = (e) => { masterVolume = parseFloat(e.target.value); if(this.audio) this.audio.updateVolume(masterVolume); localStorage.setItem('jp_vol', masterVolume); };
-
-                document.getElementById('btn-load').onclick = () => {
-                    const save = localStorage.getItem('jp_save');
-                    if(save) this.startGame(true, JSON.parse(save));
-                    else alert("Nenhum jogo salvo encontrado.");
-                };
-
                 document.getElementById('btn-resume').onclick = () => { document.getElementById('pause-menu').classList.add('hidden'); this.state.isPaused = false; document.getElementById('game-container').requestPointerLock(); };
-                document.getElementById('btn-save').onclick = () => {
-                    const saveData = {
-                        act: this.state.act, datapads: this.state.datapads, hasFuse: this.state.hasFuse, gateOpen: this.state.gateOpen,
-                        pos: this.camera.position.toArray()
-                    };
-                    localStorage.setItem('jp_save', JSON.stringify(saveData));
-                    alert("Jogo Salvo com Sucesso!");
-                };
                 document.getElementById('btn-exit').onclick = () => location.reload();
 
                 window.addEventListener('resize', () => {
@@ -723,12 +691,9 @@
                 });
             }
 
-            startGame(isLoad, saveData = null) {
-                if (!this.state.isMenuActive) return; // Impede clique duplo
+            startGame() {
+                if (!this.state.isMenuActive) return;
                 
-                if(!this.audio) this.audio = new AudioManager();
-                this.audio.updateVolume(masterVolume);
-
                 const menu = document.getElementById('main-menu');
                 menu.style.opacity = '0';
                 
@@ -737,29 +702,20 @@
                     document.getElementById('hud').classList.remove('hidden');
                     
                     this.state.isMenuActive = false;
-                    this.camera.position.set(0, 2, 10); // Volta para a posição do jogador
+                    this.camera.position.set(0, 2, 30); // Spawn na Zona 3
                     
-                    if (isLoad && saveData) {
-                        this.state.act = saveData.act; this.state.datapads = saveData.datapads;
-                        this.state.hasFuse = saveData.hasFuse; this.state.gateOpen = saveData.gateOpen;
-                        this.camera.position.fromArray(saveData.pos);
-                        this.narrative.updateHUD();
+                    this.state.isCinematic = true;
+                    document.body.classList.add('cinematic-active');
+                    document.getElementById('subtitle').classList.remove('hidden');
+                    document.getElementById('subtitle').innerText = "Encontre os 5 Data Pads. Chegue ao Navio no Sudeste. Não seja devorado.";
+                    
+                    setTimeout(() => {
+                        document.body.classList.remove('cinematic-active');
+                        document.getElementById('subtitle').classList.add('hidden');
+                        this.state.isCinematic = false;
                         this.player.controls.lock();
-                        this.narrative.triggerRadio("Jogo carregado. Cuidado lá fora.");
-                    } else {
-                        this.state.isCinematic = true;
-                        document.body.classList.add('cinematic-active');
-                        document.getElementById('subtitle').classList.remove('hidden');
-                        document.getElementById('subtitle').innerText = "Isla Nublar. 1994. O pesadelo começa.";
-                        
-                        setTimeout(() => {
-                            document.body.classList.remove('cinematic-active');
-                            document.getElementById('subtitle').classList.add('hidden');
-                            this.state.isCinematic = false;
-                            this.player.controls.lock();
-                            this.narrative.triggerRadio("Vance, encontre os 5 Data Pads e o fusível.");
-                        }, 5000);
-                    }
+                        this.narrative.triggerRadio("Vance, o sinal da Biosyn está caindo. Vá rápido.");
+                    }, 5000);
                 }, 500);
             }
 
@@ -770,26 +726,23 @@
                 const delta = Math.min(this.clock.getDelta(), 0.1);
                 const time = this.clock.getElapsedTime();
 
-                // ===== LÓGICA DO MENU (Câmera orbitando o mapa) =====
                 if (this.state.isMenuActive) {
-                    this.menuAngle += delta * 0.1;
-                    this.camera.position.x = Math.sin(this.menuAngle) * 35;
-                    this.camera.position.z = Math.cos(this.menuAngle) * 35;
-                    this.camera.position.y = 15 + Math.sin(time * 0.5) * 2;
-                    this.camera.lookAt(0, 2, -10);
+                    this.menuAngle += delta * 0.05;
+                    this.camera.position.x = Math.sin(this.menuAngle) * 120;
+                    this.camera.position.z = Math.cos(this.menuAngle) * 120;
+                    this.camera.position.y = 40 + Math.sin(time * 0.5) * 5;
+                    this.camera.lookAt(0, 10, 0);
                     
                     this.environment.updateLighting();
-                    this.environment.update(time, delta);
                     this.renderer.render(this.scene, this.camera);
                     return;
                 }
 
-                // ===== LÓGICA DO JOGO =====
                 if (!this.state.isGameOver && !this.state.isWin) {
                     this.player.update(delta, time, this.environment, this.narrative);
                     this.environment.updateLighting();
-                    this.environment.update(time, delta);
 
+                    // Spawns dos Dinos baseados no Ato
                     if (this.state.act >= 2 && !this.raptor) this.raptor = new RaptorAI(this.scene, this.player, this.state);
                     if (this.state.act === 3 && !this.trex) this.trex = new TRexAI(this.scene, this.player, this.state);
 
@@ -803,17 +756,16 @@
                         }
                     }
 
-                    if (this.environment.rain.visible && Math.random() < 0.005) {
-                        this.audio.playThunder();
-                        this.environment.sunLight.intensity = 5;
-                        setTimeout(() => this.environment.updateLighting(), 150);
-                    }
+                    // Atualiza Minimap
+                    const enemies = [this.raptor, this.trex].filter(e => e !== null);
+                    this.minimap.draw(this.camera.position, this.camera.rotation.y, enemies, this.environment.collectibles, this.environment.shipPos);
 
-                    if (this.state.gateOpen && this.state.datapads === 5 && this.camera.position.z < -40) {
-                        this.state.isWin = true;
-                        document.getElementById('win-screen').classList.remove('hidden');
-                        document.exitPointerLock();
-                    }
+                    // Atualiza HUD Zona
+                    let zoneName = "Centro (Visitantes)";
+                    if (this.camera.position.z < -50) zoneName = "Norte (Vulcão)";
+                    else if (this.camera.position.x < -50) zoneName = "Oeste (Cânions)";
+                    else if (this.camera.position.x > 50 && this.camera.position.z > 50) zoneName = "Sudeste (Docas)";
+                    document.getElementById('obj-zone').innerText = `Zona: ${zoneName}`;
                 }
                 this.renderer.render(this.scene, this.camera);
             }
