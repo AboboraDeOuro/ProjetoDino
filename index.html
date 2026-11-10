@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurassic Park: Biosyn Protocol - PSX Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #000;
+            font-family: 'VT323', monospace;
+            color: #00ff00;
+            user-select: none;
+        }
+
+        #game-container { width: 100vw; height: 100vh; }
+        .hidden { display: none !important; }
+
+        /* Efeito CRT / PSX Scanlines e Vinheta */
+        #psx-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 10;
+            background: 
+                radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%),
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            background-size: 100% 100%, 100% 3px;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 5; text-shadow: 0 0 5px #00ff00;
+        }
+
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 24px; color: rgba(255,255,255,0.4);
+        }
+
+        #interaction-prompt {
+            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00;
+            font-size: 20px; text-align: center; box-shadow: 0 0 10px #00ff00;
+        }
+
+        #battery-ui {
+            position: absolute; bottom: 30px; left: 30px;
+            background: rgba(0,0,0,0.6); padding: 10px; border: 1px solid #00ff00;
+        }
+
+        .battery-bar { width: 150px; height: 15px; background: #333; margin-top: 5px; border: 1px solid #00ff00; }
+        #battery-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.1s; }
+
+        #objectives {
+            position: absolute; top: 30px; right: 30px;
+            background: rgba(0,0,0,0.7); padding: 15px; border-left: 4px solid #00ff00;
+            text-align: right; font-size: 18px;
+        }
+
+        #radio-ui {
+            position: absolute; bottom: 30px; right: 30px; width: 350px;
+            background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #ff0000;
+        }
+
+        #datapad-ui {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #000; border: 2px solid #00ff00; padding: 30px;
+            width: 400px; pointer-events: auto; text-align: center; z-index: 15;
+        }
+
+        #datapad-ui button {
+            background: #00ff00; color: #000; border: none; padding: 10px 20px;
+            font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px;
+        }
+
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 20; text-align: center;
+        }
+        .screen h1 { font-size: 60px; margin: 0; color: #ff0000; text-shadow: 0 0 20px red; }
+        .screen h2 { font-size: 30px; margin: 10px 0 30px 0; color: #aaa; }
+        .screen p { font-size: 20px; max-width: 600px; line-height: 1.5; }
+        .screen button {
+            margin-top: 40px; padding: 15px 30px; font-size: 24px; font-family: 'VT323';
+            background: transparent; color: #00ff00; border: 2px solid #00ff00; cursor: pointer;
+        }
+        .screen button:hover { background: #00ff00; color: #000; }
+        
+        #game-over h1 { color: #ff0000; }
+        #win-screen h1 { color: #00ff00; }
+    </style>
+</head>
+<body>
+    <div id="psx-overlay"></div>
+    <div id="game-container"></div>
+
+    <div id="hud" class="hidden">
+        <div id="crosshair">+</div>
+        <div id="interaction-prompt" class="hidden">Pressione [E]</div>
+        
+        <div id="battery-ui">
+            <span>LANTERNA [F]</span>
+            <div class="battery-bar"><div id="battery-fill"></div></div>
+        </div>
+
+        <div id="objectives">
+            <div id="obj-pads">Data Pads: 0/5</div>
+            <div id="obj-fuse">Fusível: Não</div>
+            <div id="obj-gate">Portão: Trancado</div>
+        </div>
+
+        <div id="radio-ui">
+            <div>[BIOSYN SAT-COM]</div>
+            <div id="radio-text"></div>
+        </div>
+
+        <div id="datapad-ui" class="hidden">
+            <h3>LOG DE DADOS RECUPERADO</h3>
+            <p id="datapad-text"></p>
+            <button onclick="document.getElementById('datapad-ui').classList.add('hidden'); document.getElementById('game-container').requestPointerLock();">FECHAR</button>
+        </div>
+    </div>
+
+    <div id="start-screen" class="screen">
+        <h1>ISLA NUBLAR</h1>
+        <h2>1994 - BIOSYN BLACK OPS</h2>
+        <p>Dr. Gabriel Vance, recupere os 5 Data Pads e o fusível. Cuidado com o Raptor. Se ouvir algo, agache-se (Shift) e apague a lanterna (F).</p>
+        <button id="start-btn">INICIAR INFILTRAÇÃO</button>
+    </div>
+
+    <div id="game-over-screen" class="screen hidden">
+        <h1>VOCÊ FOI CAÇADO</h1>
+        <p>O Velociraptor sentiu o seu cheiro.</p>
+        <button onclick="location.reload()">TENTAR NOVAMENTE</button>
+    </div>
+
+    <div id="win-screen" class="screen hidden">
+        <h1>EXTRAÇÃO BEM-SUCEDIDA</h1>
+        <p>Você recuperou os dados e o portão foi aberto. A Biosyn agradece.</p>
+        <button onclick="location.reload()">JOGAR NOVAMENTE</button>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        // ==========================================
+        // UTILITÁRIOS E ESTADO (TEXTOS LOCAIS)
+        // ==========================================
+        const RADIO_TEXTS = [
+            "A Biosyn monitora seus passos, Vance. Não falhe.",
+            "Os sensores térmicos indicam atividade do Raptor no setor sul.",
+            "Lembre-se: apague a lanterna e agache se ouvir passos pesados.",
+            "O portão principal só abrirá com energia restaurada.",
+            "Nedry era um amador. Você é a nossa elite. Traga os dados."
+        ];
+
+        const LORE_TEXTS = [
+            "LOG 01: A cerca sul falhou. O T-Rex quebrou a barreira de alta tensão.",
+            "LOG 02: Os raptores estão caçando em bando. Eles testam a cerca.",
+            "LOG 03: O fusível principal foi removido para manutenção. Deve estar perto dos veículos.",
+            "LOG 04: A Biosyn não se importa com a InGen. Só queremos o código genético.",
+            "LOG 05: Se você está lendo isso, o portão pode ser aberto. Corra para o leste."
+        ];
+
+        const getTerrainHeight = (x, z) => {
+            let height = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 3;
+            height += Math.sin(x * 0.1) * 1.5;
+            const distToCenter = Math.sqrt(x*x + z*z);
+            if (distToCenter < 20) height *= (distToCenter / 20); 
+            return height;
+        };
+
+        class GameState {
+            constructor() {
+                this.datapads = 0;
+                this.hasFuse = false;
+                this.gateOpen = false;
+                this.isGameOver = false;
+                this.isWin = false;
+            }
+        }
+
+        class NarrativeManager {
+            constructor(gameState) {
+                this.state = gameState;
+                this.radioText = document.getElementById('radio-text');
+                this.datapadUI = document.getElementById('datapad-ui');
+                this.datapadText = document.getElementById('datapad-text');
+                this.objPads = document.getElementById('obj-pads');
+                this.objFuse = document.getElementById('obj-fuse');
+                this.objGate = document.getElementById('obj-gate');
+            }
+
+            updateHUD() {
+                this.objPads.innerText = `Data Pads: ${this.state.datapads}/5`;
+                this.objFuse.innerText = `Fusível: ${this.state.hasFuse ? 'Sim' : 'Não'}`;
+                this.objGate.innerText = `Portão: ${this.state.gateOpen ? 'Aberto' : 'Trancado'}`;
+            }
+
+            triggerRadio() {
+                // Puxa texto local aleatório
+                const text = RADIO_TEXTS[Math.floor(Math.random() * RADIO_TEXTS.length)];
+                this.radioText.innerText = text;
+                setTimeout(() => { this.radioText.innerText = ""; }, 6000);
+            }
+
+            showDataPad(padId) {
+                if (this.state.datapads >= 5) return;
+                this.state.datapads++;
+                this.updateHUD();
+                
+                // Puxa o texto local baseado no ID
+                this.datapadText.innerText = LORE_TEXTS[padId - 1] || "Dados corrompidos.";
+                
+                this.datapadUI.classList.remove('hidden');
+                document.exitPointerLock();
+            }
+        }
+
+        // ==========================================
+        // AMBIENTE (TERRENO, MODELOS, PUZZLES)
+        // ==========================================
+        class Environment {
+            constructor(scene, gameState, narrativeManager) {
+                this.scene = scene;
+                this.state = gameState;
+                this.narrative = narrativeManager;
+                this.collidables = [];
+                this.collectibles = [];
+                this.gateCollider = null;
+                this.fuseBoxPos = new THREE.Vector3(15, 0, -20);
+                this.gatePos = new THREE.Vector3(0, 0, -35);
+
+                this.createTerrain();
+                this.createMountains();
+                this.buildExplorers();
+                this.buildFenceAndGate();
+                this.buildItems();
+            }
+
+            createProceduralTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 256; canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#1a1a0f';
+                ctx.fillRect(0, 0, 256, 256);
+                
+                for(let i=0; i<3000; i++) {
+                    ctx.fillStyle = Math.random() > 0.5 ? '#2b2b1a' : '#0d0d08';
+                    ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2);
+                }
+
+                ctx.fillStyle = '#050503';
+                for(let i=0; i<10; i++) {
+                    let x = Math.random() * 256; let y = Math.random() * 256;
+                    ctx.beginPath(); ctx.ellipse(x, y, 15, 25, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(x-20, y-20, 8, 15, -Math.PI/4, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(x+20, y-20, 8, 15, Math.PI/4, 0, Math.PI*2); ctx.fill();
+                }
+
+                const tex = new THREE.CanvasTexture(canvas);
+                tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+                tex.repeat.set(30, 30);
+                tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+                return tex;
+            }
+
+            createTerrain() {
+                const geo = new THREE.PlaneGeometry(200, 200, 64, 64);
+                const pos = geo.attributes.position;
+                
+                for (let i = 0; i < pos.count; i++) {
+                    const x = pos.getX(i);
+                    const y = pos.getY(i);
+                    pos.setZ(i, getTerrainHeight(x, -y));
+                }
+                geo.computeVertexNormals();
+
+                const mat = new THREE.MeshStandardMaterial({ 
+                    map: this.createProceduralTexture(), 
+                    roughness: 1,
+                    flatShading: true 
+                });
+                
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.receiveShadow = true;
+                this.scene.add(mesh);
+            }
+
+            createMountains() {
+                const mat = new THREE.MeshStandardMaterial({ color: 0x111111, flatShading: true });
+                for(let i=0; i<15; i++) {
+                    const mount = new THREE.Mesh(new THREE.ConeGeometry(20 + Math.random()*20, 30 + Math.random()*30, 4), mat);
+                    const angle = (i / 15) * Math.PI * 2;
+                    const dist = 80 + Math.random() * 20;
+                    mount.position.set(Math.cos(angle)*dist, 0, Math.sin(angle)*dist);
+                    mount.rotation.y = Math.random();
+                    this.scene.add(mount);
+                }
+            }
+
+            buildExplorers() {
+                const carBodyMat = new THREE.MeshStandardMaterial({ color: 0xaa1111, flatShading: true });
+                const carRoofMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, flatShading: true });
+                const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.8 });
+                const tireMat = new THREE.MeshStandardMaterial({ color: 0x111111, flatShading: true });
+                
+                for (let i = 0; i < 2; i++) {
+                    const car = new THREE.Group();
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(3, 1.5, 5), carBodyMat);
+                    body.position.y = 1; body.castShadow = true; body.receiveShadow = true; car.add(body);
+                    
+                    const roof = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.2, 3), carRoofMat);
+                    roof.position.set(0, 2.3, -0.5); roof.castShadow = true; car.add(roof);
+
+                    const windshield = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1, 0.2), glassMat);
+                    windshield.position.set(0, 2.3, 1.1); car.add(windshield);
+
+                    const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.4, 8);
+                    const positions = [[-1.4, 0.6, 1.5], [1.4, 0.6, 1.5], [-1.4, 0.6, -1.5], [1.4, 0.6, -1.5]];
+                    positions.forEach(pos => {
+                        const wheel = new THREE.Mesh(wheelGeo, tireMat);
+                        wheel.rotation.z = Math.PI / 2;
+                        wheel.position.set(...pos);
+                        wheel.castShadow = true; car.add(wheel);
+                    });
+
+                    const spawnX = i === 0 ? -8 : 8; const spawnZ = -15;
+                    car.position.set(spawnX, getTerrainHeight(spawnX, spawnZ), spawnZ);
+                    
+                    if (i === 1) { car.rotation.z = Math.PI / 2; car.position.y += 1.5; } 
+                    else { car.rotation.y = Math.PI / 4; }
+                    
+                    this.scene.add(car);
+                    const box = new THREE.Box3().setFromObject(car);
+                    this.collidables.push(box);
+                }
+            }
+
+            buildFenceAndGate() {
+                const postMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.8, flatShading: true });
+                
+                for(let i=-20; i<=20; i+=5) {
+                    if (i === 0) continue;
+                    const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 8, 0.5), postMat);
+                    const zPos = -30;
+                    post.position.set(i, getTerrainHeight(i, zPos) + 4, zPos);
+                    post.rotation.z = (Math.random() - 0.5) * 0.2;
+                    post.castShadow = true; this.scene.add(post);
+                }
+                
+                const gateGroup = new THREE.Group();
+                const gateMesh = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 0.5), new THREE.MeshStandardMaterial({color: 0x555555, metalness: 0.5, flatShading: true}));
+                gateMesh.position.y = 3; gateMesh.castShadow = true; gateGroup.add(gateMesh);
+                
+                this.gatePos.set(0, getTerrainHeight(0, -30), -30);
+                gateGroup.position.copy(this.gatePos);
+                this.scene.add(gateGroup);
+                this.gate = gateGroup;
+                
+                this.gateCollider = new THREE.Box3().setFromObject(gateGroup);
+                this.collidables.push(this.gateCollider);
+
+                const fuseBox = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 0.5), new THREE.MeshStandardMaterial({color: 0x888800, flatShading: true}));
+                this.fuseBoxPos.set(10, getTerrainHeight(10, -25) + 1, -25);
+                fuseBox.position.copy(this.fuseBoxPos);
+                fuseBox.castShadow = true; this.scene.add(fuseBox);
+            }
+
+            buildItems() {
+                const padGeo = new THREE.BoxGeometry(0.4, 0.5, 0.1);
+                const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.8 });
+                
+                for(let i=0; i<5; i++) {
+                    const pad = new THREE.Mesh(padGeo, padMat);
+                    const x = (Math.random()-0.5)*60; const z = (Math.random()-0.5)*60;
+                    pad.position.set(x, getTerrainHeight(x, z) + 1, z);
+                    pad.userData.type = 'datapad'; pad.userData.id = i + 1;
+                    this.scene.add(pad); this.collectibles.push(pad);
+                }
+
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.6), new THREE.MeshStandardMaterial({color: 0xffff00, emissive: 0xaaaa00}));
+                const fx = 20, fz = 10;
+                fuse.position.set(fx, getTerrainHeight(fx, fz) + 1, fz);
+                fuse.rotation.z = Math.PI/2;
+                fuse.userData.type = 'fuse';
+                this.scene.add(fuse); this.collectibles.push(fuse);
+            }
+
+            interact(playerPos, narrative) {
+                if (playerPos.distanceTo(this.fuseBoxPos) < 3.5) {
+                    if (this.state.hasFuse && !this.state.gateOpen) {
+                        this.state.gateOpen = true;
+                        narrative.updateHUD();
+                        narrative.triggerRadio();
+                        this.scene.remove(this.gate);
+                        this.collidables = this.collidables.filter(b => b !== this.gateCollider);
+                        return;
+                    } else if (!this.state.hasFuse) {
+                        narrative.triggerRadio();
+                    }
+                }
+            }
+
+            update(time) {
+                this.collectibles.forEach(item => {
+                    item.rotation.y = time * 2;
+                    item.position.y = getTerrainHeight(item.position.x, item.position.z) + 1 + Math.sin(time * 4) * 0.2;
+                });
+            }
+        }
+
+        // ==========================================
+        // INIMIGO (RAPTOR)
+        // ==========================================
+        class EnemyAI {
+            constructor(scene, player, gameState) {
+                this.scene = scene; this.player = player; this.state = gameState;
+                this.group = new THREE.Group();
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true });
+                const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0xffaa00 });
+
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 3), skinMat);
+                body.position.y = 2; body.castShadow = true; this.group.add(body);
+
+                const neck = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.8), skinMat);
+                neck.position.set(0, 2.8, 1.2); neck.rotation.x = Math.PI/4; neck.castShadow = true; this.group.add(neck);
+
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 1.8), skinMat);
+                head.position.set(0, 3.5, 2); head.castShadow = true; this.group.add(head);
+                
+                const eye1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), eyeMat);
+                eye1.position.set(-0.4, 3.7, 2.6); this.group.add(eye1);
+                const eye2 = eye1.clone(); eye2.position.x = 0.4; this.group.add(eye2);
+
+                const tail = new THREE.Mesh(new THREE.ConeGeometry(0.5, 4, 4), skinMat);
+                tail.position.set(0, 2, -3); tail.rotation.x = -Math.PI/2; tail.castShadow = true; this.group.add(tail);
+
+                this.legs = [];
+                for(let i=0; i<2; i++) {
+                    const legGroup = new THREE.Group();
+                    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.5, 0.5), skinMat);
+                    thigh.position.y = -0.75; thigh.castShadow = true; legGroup.add(thigh);
+                    legGroup.position.set(i===0 ? -0.6 : 0.6, 1.5, -0.5);
+                    this.group.add(legGroup); this.legs.push(legGroup);
+                }
+
+                const spawnX = 0, spawnZ = -20;
+                this.group.position.set(spawnX, getTerrainHeight(spawnX, spawnZ), spawnZ);
+                this.scene.add(this.group);
+
+                this.speed = 7; this.patrolSpeed = 3;
+                this.direction = new THREE.Vector3();
+                this.targetNode = new THREE.Vector3();
+                this.state = 'PATROL'; 
+                this.pickNewTarget();
+                this.detectionRadius = 22;
+                
+                this.raycaster = new THREE.Raycaster();
+                this.downVector = new THREE.Vector3(0, -1, 0);
+            }
+
+            pickNewTarget() {
+                const x = (Math.random() - 0.5) * 80; const z = (Math.random() - 0.5) * 80;
+                this.targetNode.set(x, getTerrainHeight(x, z), z);
+            }
+
+            update(delta, time) {
+                if (this.player.state.isGameOver) return;
+
+                const distToPlayer = this.group.position.distanceTo(this.player.camera.position);
+                const isPlayerHiding = this.player.isCrouching && !this.player.isFlashlightOn;
+                const canSeePlayer = distToPlayer < this.detectionRadius && !isPlayerHiding;
+
+                if (canSeePlayer) this.state = 'CHASE';
+                else if (distToPlayer > this.detectionRadius * 1.5) this.state = 'PATROL';
+
+                if (this.state === 'CHASE') {
+                    this.direction.subVectors(this.player.camera.position, this.group.position).setY(0).normalize();
+                    this.group.position.addScaledVector(this.direction, this.speed * delta);
+                    
+                    this.legs[0].rotation.x = Math.sin(time * 20) * 0.5;
+                    this.legs[1].rotation.x = Math.cos(time * 20) * 0.5;
+                    
+                    if (distToPlayer < 2.5) {
+                        this.player.state.isGameOver = true;
+                        document.getElementById('game-over-screen').classList.remove('hidden');
+                        document.exitPointerLock();
+                    }
+                } else {
+                    this.direction.subVectors(this.targetNode, this.group.position).setY(0);
+                    if (this.direction.length() < 2) {
+                        this.pickNewTarget();
+                    } else {
+                        this.direction.normalize();
+                        this.group.position.addScaledVector(this.direction, this.patrolSpeed * delta);
+                        this.legs[0].rotation.x = Math.sin(time * 8) * 0.3;
+                        this.legs[1].rotation.x = Math.cos(time * 8) * 0.3;
+                    }
+                }
+
+                if (this.direction.length() > 0) {
+                    const lookAtPos = this.group.position.clone().add(this.direction);
+                    const targetRotation = Math.atan2(lookAtPos.x - this.group.position.x, lookAtPos.z - this.group.position.z);
+                    this.group.rotation.y = targetRotation;
+                }
+
+                this.raycaster.set(this.group.position.clone().setY(50), this.downVector);
+                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+                if (intersects.length > 0) this.group.position.y = intersects[0].point.y;
+            }
+        }
+
+        // ==========================================
+        // JOGADOR (FÍSICA E LANTERNA)
+        // ==========================================
+        class Player {
+            constructor(camera, scene, collidables, gameState) {
+                this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = gameState;
+                this.controls = new PointerLockControls(camera, document.body);
+                this.velocity = new THREE.Vector3();
+                this.moveForward = false; this.moveBackward = false;
+                this.moveLeft = false; this.moveRight = false;
+                this.isCrouching = false;
+                
+                this.playerBox = new THREE.Box3();
+                this.hitboxSize = new THREE.Vector3(1, 2, 1);
+
+                this.flashlight = new THREE.SpotLight(0xffffff, 15, 45, Math.PI / 5, 0.4, 1.5);
+                this.flashlight.castShadow = true;
+                this.flashlight.shadow.mapSize.width = 1024;
+                this.flashlight.shadow.mapSize.height = 1024;
+                this.flashlight.shadow.bias = -0.001;
+                this.camera.add(this.flashlight);
+                
+                this.flashlightTarget = new THREE.Object3D();
+                this.scene.add(this.flashlightTarget);
+                this.flashlight.target = this.flashlightTarget;
+
+                this.battery = 100;
+                this.isFlashlightOn = true;
+                this.batteryFill = document.getElementById('battery-fill');
+
+                this.raycaster = new THREE.Raycaster();
+                this.downVector = new THREE.Vector3(0, -1, 0);
+
+                this.setupEvents();
+            }
+
+            setupEvents() {
+                document.addEventListener('keydown', (e) => this.onKeyDown(e));
+                document.addEventListener('keyup', (e) => this.onKeyUp(e));
+            }
+
+            onKeyDown(event) {
+                if (this.state.isGameOver || this.state.isWin) return;
+                switch (event.code) {
+                    case 'KeyW': this.moveForward = true; break;
+                    case 'KeyS': this.moveBackward = true; break;
+                    case 'KeyA': this.moveLeft = true; break;
+                    case 'KeyD': this.moveRight = true; break;
+                    case 'ShiftLeft':
+                        this.isCrouching = true;
+                        this.camera.position.y = 1;
+                        this.hitboxSize.y = 1;
+                        break;
+                    case 'KeyF':
+                        if (this.battery > 0) {
+                            this.isFlashlightOn = !this.isFlashlightOn;
+                            this.flashlight.visible = this.isFlashlightOn;
+                        }
+                        break;
+                }
+            }
+
+            onKeyUp(event) {
+                switch (event.code) {
+                    case 'KeyW': this.moveForward = false; break;
+                    case 'KeyS': this.moveBackward = false; break;
+                    case 'KeyA': this.moveLeft = false; break;
+                    case 'KeyD': this.moveRight = false; break;
+                    case 'ShiftLeft':
+                        this.isCrouching = false;
+                        this.camera.position.y = 2;
+                        this.hitboxSize.y = 2;
+                        break;
+                }
+            }
+
+            update(delta, time, environment, narrative) {
+                if (!this.controls.isLocked || this.state.isGameOver) return;
+
+                const damping = 10.0;
+                this.velocity.x -= this.velocity.x * damping * delta;
+                this.velocity.z -= this.velocity.z * damping * delta;
+
+                const dirZ = Number(this.moveForward) - Number(this.moveBackward);
+                const dirX = Number(this.moveRight) - Number(this.moveLeft);
+                const speed = this.isCrouching ? 12.0 : 30.0;
+
+                this.velocity.z -= dirZ * speed * delta;
+                this.velocity.x -= dirX * speed * delta;
+
+                const oldPos = this.camera.position.clone();
+                this.controls.moveRight(-this.velocity.x * delta);
+                this.controls.moveForward(-this.velocity.z * delta);
+
+                this.playerBox.setFromCenterAndSize(
+                    new THREE.Vector3(this.camera.position.x, this.camera.position.y - 1, this.camera.position.z),
+                    this.hitboxSize
+                );
+
+                let collision = false;
+                this.collidables.forEach(box => {
+                    if (this.playerBox.intersectsBox(box)) collision = true;
+                });
+
+                if (collision) {
+                    this.camera.position.copy(oldPos);
+                    this.velocity.set(0, 0, 0);
+                }
+
+                this.raycaster.set(this.camera.position.clone().setY(this.camera.position.y + 5), this.downVector);
+                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+                if (intersects.length > 0) {
+                    const groundY = intersects[0].point.y;
+                    this.camera.position.y = groundY + (this.isCrouching ? 1 : 2);
+                }
+
+                if (this.isFlashlightOn && this.battery > 0) {
+                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+                    const targetPos = this.camera.position.clone().add(forward.multiplyScalar(10));
+                    
+                    targetPos.x += Math.sin(time * 8) * 0.3;
+                    targetPos.y += Math.cos(time * 6) * 0.3;
+                    
+                    this.flashlightTarget.position.lerp(targetPos, 0.5);
+                    
+                    this.battery -= 1.2 * delta;
+                    this.batteryFill.style.width = `${Math.max(0, this.battery)}%`;
+                    
+                    if (this.battery <= 0) {
+                        this.battery = 0;
+                        this.isFlashlightOn = false;
+                        this.flashlight.visible = false;
+                        narrative.triggerRadio();
+                    }
+                }
+
+                this.checkInteraction(environment, narrative);
+            }
+
+            checkInteraction(environment, narrative) {
+                const prompt = document.getElementById('interaction-prompt');
+                let canInteract = false;
+
+                for (let i = environment.collectibles.length - 1; i >= 0; i--) {
+                    const item = environment.collectibles[i];
+                    const dist = this.camera.position.distanceTo(item.position);
+                    
+                    if (dist < 3) {
+                        canInteract = true;
+                        prompt.classList.remove('hidden');
+                        
+                        if (window.keys['KeyE']) {
+                            if (item.userData.type === 'datapad') {
+                                narrative.showDataPad(item.userData.id);
+                            } else if (item.userData.type === 'fuse') {
+                                this.state.hasFuse = true;
+                                narrative.updateHUD();
+                                narrative.triggerRadio();
+                            }
+                            environment.scene.remove(item);
+                            environment.collectibles.splice(i, 1);
+                            window.keys['KeyE'] = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (this.camera.position.distanceTo(environment.fuseBoxPos) < 3.5) {
+                    canInteract = true;
+                    prompt.classList.remove('hidden');
+                    prompt.innerText = "[E] Colocar Fusível";
+                    
+                    if (window.keys['KeyE']) {
+                        environment.interact(this.camera.position, narrative);
+                        if (this.state.gateOpen && this.state.datapads === 5) {
+                            this.state.isWin = true;
+                            document.getElementById('win-screen').classList.remove('hidden');
+                            document.exitPointerLock();
+                        }
+                        window.keys['KeyE'] = false;
+                    }
+                }
+
+                if (!canInteract) prompt.classList.add('hidden');
+            }
+        }
+
+        window.keys = {};
+        document.addEventListener('keydown', e => window.keys[e.code] = true);
+        document.addEventListener('keyup', e => window.keys[e.code] = false);
+
+        // ==========================================
+        // SISTEMA CLIMÁTICO
+        // ==========================================
+        class WeatherSystem {
+            constructor(scene) {
+                this.scene = scene;
+                this.rainCount = 3000;
+                this.rainGeo = new THREE.BufferGeometry();
+                this.rainPositions = new Float32Array(this.rainCount * 3);
+                this.rainVelocities = [];
+
+                for (let i = 0; i < this.rainCount; i++) {
+                    this.rainPositions[i * 3] = (Math.random() - 0.5) * 100;
+                    this.rainPositions[i * 3 + 1] = Math.random() * 50;
+                    this.rainPositions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+                    this.rainVelocities.push(0.4 + Math.random() * 0.6);
+                }
+                this.rainGeo.setAttribute('position', new THREE.BufferAttribute(this.rainPositions, 3));
+                
+                const rainMat = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.2, transparent: true, opacity: 0.5 });
+                this.rain = new THREE.Points(this.rainGeo, rainMat);
+                this.scene.add(this.rain);
+
+                this.flashLight = new THREE.DirectionalLight(0xffffff, 0);
+                this.flashLight.castShadow = true;
+                this.scene.add(this.flashLight);
+                this.isLightning = false; this.timer = 0;
+            }
+
+            update(delta) {
+                const positions = this.rainGeo.attributes.position.array;
+                for (let i = 0; i < this.rainCount; i++) {
+                    positions[i * 3 + 1] -= this.rainVelocities[i] * delta * 60;
+                    if (positions[i * 3 + 1] < 0) {
+                        positions[i * 3 + 1] = 50;
+                        positions[i * 3] = (Math.random() - 0.5) * 100;
+                        positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+                    }
+                }
+                this.rainGeo.attributes.position.needsUpdate = true;
+
+                this.timer -= delta;
+                if (this.timer <= 0 && !this.isLightning) {
+                    if (Math.random() > 0.97) {
+                        this.isLightning = true; this.flashLight.intensity = 10;
+                        this.scene.fog.density = 0.02; this.timer = 0.1;
+                    }
+                } else if (this.isLightning) {
+                    if (this.timer <= 0) {
+                        this.isLightning = false; this.flashLight.intensity = 0;
+                        this.scene.fog.density = 0.05; this.timer = 4 + Math.random() * 5;
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // LOOP PRINCIPAL
+        // ==========================================
+        class Game {
+            constructor() {
+                this.container = document.getElementById('game-container');
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x0a110a);
+                this.scene.fog = new THREE.FogExp2(0x0a110a, 0.05);
+
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
+                this.camera.position.set(0, 2, 10);
+
+                this.renderer = new THREE.WebGLRenderer({ antialias: false });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(0.5); 
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.BasicShadowMap; 
+                this.container.appendChild(this.renderer.domElement);
+
+                this.clock = new THREE.Clock();
+                this.gameState = new GameState();
+                
+                this.init();
+            }
+
+            init() {
+                const ambientLight = new THREE.HemisphereLight(0x334433, 0x000000, 0.4);
+                this.scene.add(ambientLight);
+
+                this.narrative = new NarrativeManager(this.gameState);
+                this.weather = new WeatherSystem(this.scene);
+                this.environment = new Environment(this.scene, this.gameState, this.narrative);
+                this.player = new Player(this.camera, this.scene, this.environment.collidables, this.gameState);
+                this.enemy = new EnemyAI(this.scene, this.player, this.gameState);
+
+                document.getElementById('start-btn').addEventListener('click', () => {
+                    document.getElementById('start-screen').style.display = 'none';
+                    document.getElementById('hud').classList.remove('hidden');
+                    this.player.controls.lock();
+                    this.narrative.triggerRadio();
+                });
+
+                window.addEventListener('resize', () => this.onWindowResize());
+                this.animate();
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                const delta = Math.min(this.clock.getDelta(), 0.1);
+                const time = this.clock.getElapsedTime();
+
+                if (!this.gameState.isGameOver && !this.gameState.isWin) {
+                    this.player.update(delta, time, this.environment, this.narrative);
+                    this.enemy.update(delta, time);
+                    this.weather.update(delta);
+                    this.environment.update(time);
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        new Game();
+    </script>
+</body>
+</html>
