@@ -3,98 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurassic Park: Biosyn Protocol - Full Game</title>
+    <title>Jurassic Park: Biosyn Protocol - Story Mode</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; background-color: #000;
-            font-family: 'VT323', monospace;
-            color: #00ff00;
+            font-family: 'Oswald', sans-serif;
+            color: #fff;
             user-select: none;
         }
 
-        #game-container { width: 100vw; height: 100vh; }
+        #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         .hidden { display: none !important; }
 
-        /* Efeito CRT / PSX Scanlines e Vinheta */
+        /* ==========================================
+           NOVO MENU PRINCIPAL (ESTILO CONSOLE AAA)
+           ========================================== */
+        #main-menu {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 50; display: flex; background-color: #050505;
+            transition: opacity 1s ease;
+        }
+
+        /* Textura de pedra para o lado esquerdo */
+        .menu-left {
+            width: 45%; height: 100%;
+            background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%);
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.1"/></svg>');
+            position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw;
+            /* Efeito de borda rasgada */
+            clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%);
+            box-shadow: 10px 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* Logo Jurassic Park recriado em CSS */
+        .logo-container { margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; width: 220px; }
+        .logo-circle {
+            width: 140px; height: 140px; border-radius: 50%; background-color: #cc0000;
+            border: 4px solid #111; box-shadow: inset 0 0 20px #000;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; overflow: hidden; margin-bottom: -20px; z-index: 1;
+        }
+        .logo-circle::after {
+            content: "🦖"; font-size: 80px; transform: scaleX(-1); position: absolute; bottom: 10px;
+            filter: brightness(0); /* Deixa o emoji preto */
+        }
+        .logo-text {
+            background-color: #ffcc00; color: #000; font-family: 'Cinzel', serif;
+            font-weight: bold; font-size: 24px; padding: 5px 15px; border: 3px solid #111;
+            text-align: center; width: 100%; box-sizing: border-box; z-index: 2;
+            letter-spacing: 2px; text-shadow: 1px 1px 0px #fff;
+        }
+        .logo-sub {
+            background-color: #111; color: #ffcc00; font-family: 'Oswald', sans-serif;
+            font-size: 14px; padding: 2px 10px; border: 2px solid #ffcc00; margin-top: 5px;
+            letter-spacing: 4px; font-weight: bold;
+        }
+
+        /* Lista de Menu */
+        .menu-list { list-style: none; padding: 0; margin: 0; font-family: 'Oswald', sans-serif; }
+        .menu-list li {
+            font-size: 28px; color: #ffcc00; font-weight: 600; margin-bottom: 15px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); transition: all 0.2s;
+            position: relative;
+        }
+        .menu-list li:hover { color: #fff; text-shadow: 0 0 10px #ffcc00; transform: translateX(10px); }
+        .menu-list li::before {
+            content: ">"; position: absolute; left: -25px; opacity: 0; color: #ffcc00; transition: opacity 0.2s;
+        }
+        .menu-list li:hover::before { opacity: 1; }
+
+        /* Lado Direito (Imagem e Título) */
+        .menu-right {
+            width: 55%; height: 100%; position: relative;
+            background: linear-gradient(to right, #000 0%, transparent 20%), 
+                        url('https://images.unsplash.com/photo-1614292086524-48263bc46d8c?q=80&w=2070&auto=format&fit=crop') center/cover;
+            /* Placeholder: Substitua a URL acima pela sua imagem do T-Rex se desejar */
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px;
+        }
+
+        .episode-header {
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 600;
+            text-shadow: 2px 2px 4px #000; letter-spacing: 2px;
+        }
+        .episode-header h1 { margin: 0; font-size: 32px; }
+        .arrow-btn {
+            width: 50px; height: 50px; background: rgba(0,0,0,0.6); border: 2px solid #fff;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 28px; cursor: pointer; transition: background 0.3s;
+        }
+        .arrow-btn:hover { background: #ffcc00; color: #000; }
+
+        .bottom-links {
+            display: flex; justify-content: flex-end; gap: 30px;
+            font-size: 20px; font-weight: 600; text-shadow: 1px 1px 2px #000;
+            letter-spacing: 1px; margin-bottom: 20px;
+        }
+        .bottom-links span { cursor: pointer; transition: color 0.3s; }
+        .bottom-links span:hover { color: #ffcc00; }
+
+
+        /* ==========================================
+           HUD DO JOGO (Mantido do original)
+           ========================================== */
         #psx-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             pointer-events: none; z-index: 10;
-            background: 
-                radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%),
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%),
+                        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
             background-size: 100% 100%, 100% 3px;
         }
 
-        /* HUD */
-        #hud {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 5; text-shadow: 0 0 5px #00ff00;
-        }
-
-        #crosshair {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 24px; color: rgba(255,255,255,0.4);
-        }
-
-        #interaction-prompt {
-            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00;
-            font-size: 20px; text-align: center; box-shadow: 0 0 10px #00ff00;
-        }
-
-        #battery-ui {
-            position: absolute; bottom: 30px; left: 30px;
-            background: rgba(0,0,0,0.6); padding: 10px; border: 1px solid #00ff00;
-        }
-
+        #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; font-family: 'VT323', monospace; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: rgba(255,255,255,0.4); }
+        
+        #interaction-prompt { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00; font-size: 20px; text-align: center; }
+        #battery-ui { position: absolute; bottom: 30px; left: 30px; background: rgba(0,0,0,0.6); padding: 10px; border: 1px solid #00ff00; }
         .battery-bar { width: 150px; height: 15px; background: #333; margin-top: 5px; border: 1px solid #00ff00; }
-        #battery-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.1s; }
+        #battery-fill { width: 100%; height: 100%; background: #00ff00; }
 
-        #objectives {
-            position: absolute; top: 30px; right: 30px;
-            background: rgba(0,0,0,0.7); padding: 15px; border-left: 4px solid #00ff00;
-            text-align: right; font-size: 18px;
-        }
+        #objectives { position: absolute; top: 30px; right: 30px; background: rgba(0,0,0,0.7); padding: 15px; border-left: 4px solid #00ff00; text-align: right; font-size: 18px; }
         #act-indicator { font-size: 24px; color: #ffff00; margin-bottom: 10px; }
+        #radio-ui { position: absolute; bottom: 30px; right: 30px; width: 350px; background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #ff0000; }
 
-        #radio-ui {
-            position: absolute; bottom: 30px; right: 30px; width: 350px;
-            background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #ff0000;
-        }
+        #ui-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 2px solid #00ff00; padding: 30px; width: 400px; pointer-events: auto; text-align: center; z-index: 15; font-family: 'VT323', monospace; }
+        #ui-modal button { background: #00ff00; color: #000; border: none; padding: 10px 20px; font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px; }
 
-        #ui-modal {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #000; border: 2px solid #00ff00; padding: 30px;
-            width: 400px; pointer-events: auto; text-align: center; z-index: 15;
-        }
+        /* CINEMATIC UI */
+        .letterbox { position: absolute; left: 0; width: 100%; height: 12vh; background: #000; z-index: 30; transition: transform 1s ease; }
+        #letterbox-top { top: 0; transform: translateY(-100%); }
+        #letterbox-bottom { bottom: 0; transform: translateY(100%); }
+        .cinematic-active #letterbox-top { transform: translateY(0); }
+        .cinematic-active #letterbox-bottom { transform: translateY(0); }
+        #subtitle { position: absolute; bottom: 15vh; left: 50%; transform: translateX(-50%); width: 80%; text-align: center; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; z-index: 31; font-style: italic; font-family: 'VT323', monospace; }
 
-        #ui-modal button {
-            background: #00ff00; color: #000; border: none; padding: 10px 20px;
-            font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px;
-        }
-
-        .screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 20; text-align: center;
-        }
-        .screen h1 { font-size: 60px; margin: 0; color: #ff0000; text-shadow: 0 0 20px red; }
-        .screen h2 { font-size: 30px; margin: 10px 0 30px 0; color: #aaa; }
+        /* Telas de Game Over e Win */
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; text-align: center; }
+        .screen h1 { font-size: 60px; margin: 0; color: #ff0000; text-shadow: 0 0 20px red; font-family: 'Cinzel', serif; }
         .screen p { font-size: 20px; max-width: 600px; line-height: 1.5; }
-        .screen button {
-            margin-top: 40px; padding: 15px 30px; font-size: 24px; font-family: 'VT323';
-            background: transparent; color: #00ff00; border: 2px solid #00ff00; cursor: pointer;
-        }
-        .screen button:hover { background: #00ff00; color: #000; }
+        .screen button { margin-top: 40px; padding: 15px 30px; font-size: 24px; font-family: 'Oswald'; background: transparent; color: #ffcc00; border: 2px solid #ffcc00; cursor: pointer; text-transform: uppercase; }
+        .screen button:hover { background: #ffcc00; color: #000; }
     </style>
 </head>
 <body>
     <div id="psx-overlay"></div>
     <div id="game-container"></div>
 
+    <!-- CINEMATIC UI -->
+    <div id="letterbox-top" class="letterbox"></div>
+    <div id="letterbox-bottom" class="letterbox"></div>
+    <div id="subtitle" class="hidden"></div>
+
+    <!-- NOVO MENU INICIAL -->
+    <div id="main-menu">
+        <div class="menu-left">
+            <div class="logo-container">
+                <div class="logo-circle"></div>
+                <div class="logo-text">JURASSIC PARK</div>
+                <div class="logo-sub">THE GAME</div>
+            </div>
+            <ul class="menu-list">
+                <li id="start-btn">BEGIN EPISODE</li>
+                <li onclick="alert('Nenhum save encontrado.')">LOAD GAME</li>
+                <li onclick="alert('Configurações não disponíveis na demo.')">SETTINGS</li>
+                <li onclick="alert('Language: PT-BR / EN-US')">LANGUAGE</li>
+                <li onclick="window.close()">QUIT</li>
+            </ul>
+        </div>
+        <div class="menu-right">
+            <div class="episode-header">
+                <h1>EPISODE 1: THE INTRUDER</h1>
+                <div class="arrow-btn">></div>
+            </div>
+            <!-- A imagem do T-Rex é o background do .menu-right no CSS -->
+            <div class="bottom-links">
+                <span>SCENARIOS</span>
+                <span>JOURNAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD DO JOGO -->
     <div id="hud" class="hidden">
         <div id="crosshair">+</div>
         <div id="interaction-prompt" class="hidden">Pressione [E]</div>
@@ -105,7 +198,7 @@
         </div>
 
         <div id="objectives">
-            <div id="act-indicator">ATO I - TARDE</div>
+            <div id="act-indicator">ATO I</div>
             <div id="obj-pads">Data Pads: 0/5</div>
             <div id="obj-fuse">Fusível: Não</div>
             <div id="obj-gate">Portão: Trancado</div>
@@ -123,22 +216,15 @@
         </div>
     </div>
 
-    <div id="start-screen" class="screen">
-        <h1>ISLA NUBLAR</h1>
-        <h2>1994 - BIOSYN BLACK OPS</h2>
-        <p>Dr. Gabriel Vance, o sol está se pondo. Recupere os 5 Data Pads, encontre o fusível e fuja antes que fique escuro. O T-Rex está solto.</p>
-        <button id="start-btn">INICIAR INFILTRAÇÃO</button>
-    </div>
-
     <div id="game-over-screen" class="screen hidden">
         <h1>VOCÊ FOI DEVORADO</h1>
-        <p>O Tiranossauro sentiu o seu cheiro.</p>
+        <p>A cadeia alimentar foi restaurada.</p>
         <button onclick="location.reload()">TENTAR NOVAMENTE</button>
     </div>
 
     <div id="win-screen" class="screen hidden">
         <h1>EXTRAÇÃO BEM-SUCEDIDA</h1>
-        <p>Você recuperou os dados e o portão foi aberto. A Biosyn agradece.</p>
+        <p>Você recuperou os dados e fugiu de Isla Nublar. A Biosyn agradece.</p>
         <button onclick="location.reload()">JOGAR NOVAMENTE</button>
     </div>
 
@@ -157,7 +243,7 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         // ==========================================
-        // UTILITÁRIOS E ESTADO DO JOGO
+        // UTILITÁRIOS
         // ==========================================
         const getTerrainHeight = (x, z) => {
             let height = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 3;
@@ -167,22 +253,17 @@
             return height;
         };
 
-        const RADIO_TEXTS = [
-            "Vance, o sol está baixando. A temperatura vai cair.",
-            "Os sensores térmicos indicam que ELE está acordado.",
-            "Se ouvir passos pesados, apague a lanterna e agache.",
-            "A energia do portão principal ainda está cortada.",
-            "A InGen perdeu o controle. Você está por conta própria."
-        ];
-
         const LORE_TEXTS = [
             "LOG 01: A cerca sul falhou. O T-Rex quebrou a barreira.",
-            "LOG 02: O T-Rex é atraído por luz e movimento.",
-            "LOG 03: O fusível principal foi jogado perto da caixa d'água.",
-            "LOG 04: Se o T-Rex te vir, corra em zigue-zague. É a sua única chance.",
+            "LOG 02: O T-Rex é atraído por luz e movimento. Cuidado.",
+            "LOG 03: O fusível principal caiu perto do portão.",
+            "LOG 04: Um Raptor foi liberado. Se ele te vir, corra.",
             "LOG 05: O portão do leste pode ser aberto se a energia voltar."
         ];
 
+        // ==========================================
+        // ESTADO DO JOGO
+        // ==========================================
         class GameState {
             constructor() {
                 this.datapads = 0;
@@ -190,45 +271,78 @@
                 this.gateOpen = false;
                 this.isGameOver = false;
                 this.isWin = false;
-                this.act = 1; // 1 = Tarde, 2 = Entardecer, 3 = Noite
+                this.act = 1; // 1 = Tarde, 2 = Entardecer (Raptor), 3 = Noite (T-Rex)
+                this.isCinematic = false;
             }
         }
 
+        // ==========================================
+        // GERENCIADOR DE HISTÓRIA E UI
+        // ==========================================
         class NarrativeManager {
-            constructor(gameState) {
+            constructor(gameState, camera) {
                 this.state = gameState;
+                this.camera = camera;
                 this.radioText = document.getElementById('radio-text');
                 this.modalUI = document.getElementById('ui-modal');
-                this.modalTitle = document.getElementById('modal-title');
-                this.modalText = document.getElementById('modal-text');
-                
-                this.objPads = document.getElementById('obj-pads');
-                this.objFuse = document.getElementById('obj-fuse');
-                this.objGate = document.getElementById('obj-gate');
+                this.subtitle = document.getElementById('subtitle');
                 this.actIndicator = document.getElementById('act-indicator');
+                this.objPads = document.getElementById('obj-pads');
+                
+                this.cinematicTimeouts = [];
             }
 
             updateHUD() {
                 this.objPads.innerText = `Data Pads: ${this.state.datapads}/5`;
-                this.objFuse.innerText = `Fusível: ${this.state.hasFuse ? 'Sim' : 'Não'}`;
-                this.objGate.innerText = `Portão: ${this.state.gateOpen ? 'Aberto' : 'Trancado'}`;
-                
                 if(this.state.act === 1) this.actIndicator.innerText = "ATO I - TARDE";
                 if(this.state.act === 2) this.actIndicator.innerText = "ATO II - ENTARDECER";
                 if(this.state.act === 3) this.actIndicator.innerText = "ATO III - NOITE";
             }
 
-            triggerRadio() {
-                const text = RADIO_TEXTS[Math.floor(Math.random() * RADIO_TEXTS.length)];
+            triggerRadio(text) {
                 this.radioText.innerText = text;
                 setTimeout(() => { this.radioText.innerText = ""; }, 6000);
             }
 
-            showModal(title, text) {
-                this.modalTitle.innerText = title;
-                this.modalText.innerText = text;
-                this.modalUI.classList.remove('hidden');
+            playIntroCutscene(onComplete) {
+                this.state.isCinematic = true;
+                document.body.classList.add('cinematic-active');
+                this.subtitle.classList.remove('hidden');
                 document.exitPointerLock();
+
+                const sequence = [
+                    { text: "1994. Isla Nublar.", time: 0 },
+                    { text: "O Projeto Jurassic Park entrou em colapso.", time: 4000 },
+                    { text: "A Biosyn enviou você, Dr. Gabriel Vance, para recuperar os segredos da InGen.", time: 8000 },
+                    { text: "O sol está se pondo. Você não está sozinho.", time: 13000 },
+                ];
+
+                sequence.forEach(step => {
+                    const t = setTimeout(() => { this.subtitle.innerText = step.text; }, step.time);
+                    this.cinematicTimeouts.push(t);
+                });
+
+                const startPos = this.camera.position.clone();
+                const endPos = new THREE.Vector3(0, 5, 20);
+                let progress = 0;
+
+                const anim = () => {
+                    if(progress < 1) {
+                        progress += 0.005;
+                        this.camera.position.lerpVectors(startPos, endPos, progress);
+                        this.camera.lookAt(0, 0, -20);
+                        requestAnimationFrame(anim);
+                    }
+                };
+                anim();
+
+                setTimeout(() => {
+                    document.body.classList.remove('cinematic-active');
+                    this.subtitle.classList.add('hidden');
+                    this.state.isCinematic = false;
+                    this.updateHUD();
+                    onComplete();
+                }, 17000);
             }
 
             showDataPad(padId) {
@@ -236,63 +350,56 @@
                 this.state.datapads++;
                 this.updateHUD();
                 
-                this.showModal("LOG DE DADOS", LORE_TEXTS[padId - 1] || "Dados corrompidos.");
+                this.modalUI.querySelector('#modal-title').innerText = "LOG DE DADOS";
+                this.modalUI.querySelector('#modal-text').innerText = LORE_TEXTS[padId - 1];
+                this.modalUI.classList.remove('hidden');
+                document.exitPointerLock();
                 
-                // Avançar o tempo baseado nos Data Pads
                 if(this.state.datapads === 2 && this.state.act === 1) {
                     this.state.act = 2;
                     this.updateHUD();
-                    this.triggerRadio();
+                    this.triggerRadio("[ALERTA] O sol se pôs. Sensores detectaram um Raptor na área.");
                 } else if (this.state.datapads === 4 && this.state.act === 2) {
                     this.state.act = 3;
                     this.updateHUD();
-                    this.triggerRadio();
+                    this.triggerRadio("[ALERTA CRÍTICO] A cerca caiu. O T-Rex está vindo para o seu lado.");
                 }
-            }
-
-            showDialogue(name, text) {
-                this.showModal(`[${name}]`, text);
             }
         }
 
         // ==========================================
-        // AMBIENTE (CICLO DIA/NOITE, DECORAÇÕES)
+        // AMBIENTE
         // ==========================================
         class Environment {
-            constructor(scene, gameState, narrativeManager) {
+            constructor(scene, gameState, narrative) {
                 this.scene = scene;
                 this.state = gameState;
-                this.narrative = narrativeManager;
+                this.narrative = narrative;
                 this.collidables = [];
                 this.collectibles = [];
-                this.npcs = [];
                 this.gateCollider = null;
+                
                 this.fuseBoxPos = new THREE.Vector3(15, 0, -20);
                 this.gatePos = new THREE.Vector3(0, 0, -35);
 
-                // Luzes para o ciclo dia/noite
-                this.sunLight = new THREE.DirectionalLight(0xffffff, 1);
+                this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
                 this.sunLight.castShadow = true;
-                this.sunLight.shadow.mapSize.width = 2048;
-                this.sunLight.shadow.mapSize.height = 2048;
+                this.sunLight.shadow.mapSize.width = 1024;
+                this.sunLight.shadow.mapSize.height = 1024;
                 this.scene.add(this.sunLight);
                 
-                this.hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+                this.hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x444444, 1);
                 this.scene.add(this.hemiLight);
 
-                this.createTerrain();
-                this.createMountains();
-                this.buildExplorers();
-                this.buildFenceAndGate();
-                this.buildItems();
+                this.buildTerrain();
                 this.buildDecorations();
-                this.buildNPCs();
+                this.buildCars();
+                this.buildGate();
+                this.buildItems();
             }
 
             updateLighting() {
-                // Cores baseadas no Ato
                 if (this.state.act === 1) {
-                    // Tarde: Sol forte, céu azul
                     this.scene.background = new THREE.Color(0x87CEEB);
                     this.scene.fog.color.setHex(0x87CEEB);
                     this.sunLight.color.setHex(0xffffee);
@@ -300,7 +407,6 @@
                     this.sunLight.position.set(50, 100, 50);
                     this.hemiLight.intensity = 1;
                 } else if (this.state.act === 2) {
-                    // Entardecer: Laranja, sombras longas
                     this.scene.background = new THREE.Color(0xff8c00);
                     this.scene.fog.color.setHex(0xff8c00);
                     this.sunLight.color.setHex(0xffaa00);
@@ -308,7 +414,6 @@
                     this.sunLight.position.set(-50, 30, 50);
                     this.hemiLight.intensity = 0.5;
                 } else {
-                    // Noite: Escuro, luar azulado
                     this.scene.background = new THREE.Color(0x050510);
                     this.scene.fog.color.setHex(0x050510);
                     this.sunLight.color.setHex(0x334466);
@@ -318,87 +423,62 @@
                 }
             }
 
-            createTerrain() {
+            buildTerrain() {
                 const geo = new THREE.PlaneGeometry(200, 200, 64, 64);
                 const pos = geo.attributes.position;
-                
                 for (let i = 0; i < pos.count; i++) {
                     const x = pos.getX(i); const y = pos.getY(i);
                     pos.setZ(i, getTerrainHeight(x, -y));
                 }
                 geo.computeVertexNormals();
 
-                const mat = new THREE.MeshStandardMaterial({ 
-                    color: 0x2e4a25, // Grama mais viva
-                    roughness: 1,
-                    flatShading: true 
-                });
-                
+                const mat = new THREE.MeshStandardMaterial({ color: 0x2e4a25, roughness: 1, flatShading: true });
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.receiveShadow = true;
                 this.scene.add(mesh);
             }
 
-            createMountains() {
-                const mat = new THREE.MeshStandardMaterial({ color: 0x223311, flatShading: true });
-                for(let i=0; i<15; i++) {
-                    const mount = new THREE.Mesh(new THREE.ConeGeometry(20 + Math.random()*20, 30 + Math.random()*30, 4), mat);
-                    const angle = (i / 15) * Math.PI * 2;
-                    const dist = 80 + Math.random() * 20;
-                    mount.position.set(Math.cos(angle)*dist, 0, Math.sin(angle)*dist);
-                    this.scene.add(mount);
-                }
-            }
-
             buildDecorations() {
-                // Árvores e Rochas
                 const treeMat = new THREE.MeshStandardMaterial({ color: 0x1a3a10, flatShading: true });
                 const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, flatShading: true });
                 const rockMat = new THREE.MeshStandardMaterial({ color: 0x555555, flatShading: true });
 
-                for(let i=0; i<40; i++) {
-                    const x = (Math.random() - 0.5) * 160;
-                    const z = (Math.random() - 0.5) * 160;
-                    
-                    if (Math.sqrt(x*x + z*z) < 15) continue; // Não spawnar no início
+                for(let i=0; i<60; i++) {
+                    const x = (Math.random() - 0.5) * 160; const z = (Math.random() - 0.5) * 160;
+                    if (Math.sqrt(x*x + z*z) < 15) continue;
 
-                    if (Math.random() > 0.5) {
-                        // Árvore
+                    if (Math.random() > 0.4) {
                         const tree = new THREE.Group();
                         const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 4), trunkMat);
                         trunk.position.y = 2; trunk.castShadow = true; tree.add(trunk);
                         const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 6, 5), treeMat);
                         leaves.position.y = 6; leaves.castShadow = true; tree.add(leaves);
-                        
                         tree.position.set(x, getTerrainHeight(x,z), z);
                         this.scene.add(tree);
                         this.collidables.push(new THREE.Box3().setFromObject(trunk));
                     } else {
-                        // Rocha
                         const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random()*2), rockMat);
                         rock.position.set(x, getTerrainHeight(x,z), z);
-                        rock.rotation.set(Math.random(), Math.random(), Math.random());
                         rock.castShadow = true; rock.receiveShadow = true;
                         this.scene.add(rock);
                     }
                 }
             }
 
-            buildExplorers() {
-                const carBodyMat = new THREE.MeshStandardMaterial({ color: 0xcc1111, flatShading: true });
-                const carRoofMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, flatShading: true });
-                const tireMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+            buildCars() {
+                const carBody = new THREE.MeshStandardMaterial({ color: 0xcc1111, flatShading: true });
+                const carRoof = new THREE.MeshStandardMaterial({ color: 0xeeeeee, flatShading: true });
                 
                 for (let i = 0; i < 2; i++) {
                     const car = new THREE.Group();
-                    const body = new THREE.Mesh(new THREE.BoxGeometry(3, 1.5, 5), carBodyMat);
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(3, 1.5, 5), carBody);
                     body.position.y = 1; body.castShadow = true; car.add(body);
-                    const roof = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.2, 3), carRoofMat);
+                    const roof = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.2, 3), carRoof);
                     roof.position.set(0, 2.3, -0.5); roof.castShadow = true; car.add(roof);
 
-                    const spawnX = i === 0 ? -8 : 8; const spawnZ = -15;
-                    car.position.set(spawnX, getTerrainHeight(spawnX, spawnZ), spawnZ);
+                    const sx = i === 0 ? -8 : 8; const sz = -15;
+                    car.position.set(sx, getTerrainHeight(sx, sz), sz);
                     if (i === 1) { car.rotation.z = Math.PI / 2; car.position.y += 1.5; } 
                     else { car.rotation.y = Math.PI / 4; }
                     
@@ -407,16 +487,7 @@
                 }
             }
 
-            buildFenceAndGate() {
-                const postMat = new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true });
-                for(let i=-20; i<=20; i+=5) {
-                    if (i === 0) continue;
-                    const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 8, 0.5), postMat);
-                    const zPos = -30;
-                    post.position.set(i, getTerrainHeight(i, zPos) + 4, zPos);
-                    post.castShadow = true; this.scene.add(post);
-                }
-                
+            buildGate() {
                 const gateGroup = new THREE.Group();
                 const gateMesh = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 0.5), new THREE.MeshStandardMaterial({color: 0x555555}));
                 gateMesh.position.y = 3; gateMesh.castShadow = true; gateGroup.add(gateMesh);
@@ -439,43 +510,24 @@
                     const pad = new THREE.Mesh(padGeo, padMat);
                     const x = (Math.random()-0.5)*60; const z = (Math.random()-0.5)*60;
                     pad.position.set(x, getTerrainHeight(x, z) + 1, z);
-                    pad.userData.type = 'datapad'; pad.userData.id = i + 1;
+                    pad.userData = { type: 'datapad', id: i + 1 };
                     this.scene.add(pad); this.collectibles.push(pad);
                 }
 
                 const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.6), new THREE.MeshStandardMaterial({color: 0xffff00, emissive: 0xaaaa00}));
                 const fx = 20, fz = 10;
                 fuse.position.set(fx, getTerrainHeight(fx, fz) + 1, fz);
-                fuse.rotation.z = Math.PI/2; fuse.userData.type = 'fuse';
+                fuse.rotation.z = Math.PI/2; fuse.userData = { type: 'fuse' };
                 this.scene.add(fuse); this.collectibles.push(fuse);
-            }
-
-            buildNPCs() {
-                // NPC Sobrevivente perto dos carros
-                const npcGroup = new THREE.Group();
-                const skinMat = new THREE.MeshStandardMaterial({ color: 0xd2a679 });
-                const clothMat = new THREE.MeshStandardMaterial({ color: 0x224466 });
-                
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.5), clothMat);
-                body.position.y = 0.75; body.castShadow = true; npcGroup.add(body);
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.3), skinMat);
-                head.position.y = 1.7; head.castShadow = true; npcGroup.add(head);
-                
-                const nx = -5, nz = -12;
-                npcGroup.position.set(nx, getTerrainHeight(nx, nz), nz);
-                this.scene.add(npcGroup);
-                this.npcs.push({ mesh: npcGroup, name: "Sobrevivente InGen", line: "Ele está lá fora... o T-Rex. Apague essa lanterna se ouvir passos. O fusível caiu perto do portão!" });
             }
 
             interact(playerPos, narrative) {
                 if (playerPos.distanceTo(this.fuseBoxPos) < 3.5) {
                     if (this.state.hasFuse && !this.state.gateOpen) {
                         this.state.gateOpen = true;
-                        narrative.updateHUD(); narrative.triggerRadio();
                         this.scene.remove(this.gate);
                         this.collidables = this.collidables.filter(b => b !== this.gateCollider);
-                    } else if (!this.state.hasFuse) {
-                        narrative.triggerRadio();
+                        narrative.triggerRadio("Energia restaurada! O portão está aberto, corra!");
                     }
                 }
             }
@@ -489,55 +541,41 @@
         }
 
         // ==========================================
-        // INIMIGO (T-REX GLB)
+        // IA BASE (COMPARTILHADA)
         // ==========================================
-        class EnemyAI {
-            constructor(scene, player, gameState) {
+        class BaseDino {
+            constructor(scene, player, gameState, modelUrl, scale, speed, detectionRadius) {
                 this.scene = scene; this.player = player; this.state = gameState;
                 this.group = new THREE.Group();
-                this.mixer = null; // Para animações GLB
+                this.mixer = null;
+                this.speed = speed; this.patrolSpeed = 2;
+                this.detectionRadius = detectionRadius;
                 
-                // Carrega o Modelo t_rex.glb que você colocou no GitHub
+                this.direction = new THREE.Vector3();
+                this.targetNode = new THREE.Vector3();
+                this.aiState = 'PATROL';
+                this.pickNewTarget();
+
+                this.raycaster = new THREE.Raycaster();
+                this.downVector = new THREE.Vector3(0, -1, 0);
+
                 const loader = new GLTFLoader();
-                loader.load('./t_rex.glb', (gltf) => {
+                loader.load(modelUrl, (gltf) => {
                     this.model = gltf.scene;
-                    
-                    // Ajusta escala e sombras
-                    this.model.scale.set(1.5, 1.5, 1.5); 
-                    this.model.traverse((child) => {
-                        if (child.isMesh) {
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                        }
-                    });
-                    
+                    this.model.scale.set(scale, scale, scale);
+                    this.model.traverse((c) => { if(c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
                     this.group.add(this.model);
                     
-                    // Se o modelo tiver animação, toca ela
                     if (gltf.animations && gltf.animations.length > 0) {
                         this.mixer = new THREE.AnimationMixer(this.model);
                         this.mixer.clipAction(gltf.animations[0]).play();
                     }
-                }, undefined, (error) => {
-                    console.error("Erro ao carregar t_rex.glb:", error);
-                    // Fallback caso o arquivo não exista
-                    const box = new THREE.Mesh(new THREE.BoxGeometry(3,4,6), new THREE.MeshBasicMaterial({color:0xff0000}));
-                    box.position.y = 2; this.group.add(box);
+                }, undefined, () => {
+                    const box = new THREE.Mesh(new THREE.BoxGeometry(2,3,4), new THREE.MeshBasicMaterial({color:0xff0000}));
+                    box.position.y = 1.5; this.group.add(box);
                 });
 
-                const spawnX = 0, spawnZ = -20;
-                this.group.position.set(spawnX, getTerrainHeight(spawnX, spawnZ), spawnZ);
                 this.scene.add(this.group);
-
-                this.speed = 9; this.patrolSpeed = 2;
-                this.direction = new THREE.Vector3();
-                this.targetNode = new THREE.Vector3();
-                this.aiState = 'PATROL'; 
-                this.pickNewTarget();
-                this.detectionRadius = 25;
-                
-                this.raycaster = new THREE.Raycaster();
-                this.downVector = new THREE.Vector3(0, -1, 0);
             }
 
             pickNewTarget() {
@@ -546,34 +584,34 @@
             }
 
             update(delta, time) {
-                if (this.player.state.isGameOver) return;
+                if (this.player.state.isGameOver || !this.group.parent) return;
                 if (this.mixer) this.mixer.update(delta);
 
                 const distToPlayer = this.group.position.distanceTo(this.player.camera.position);
-                
-                // Lógica de esconderijo: Agachado E sem lanterna
                 const isPlayerHiding = this.player.isCrouching && !this.player.isFlashlightOn;
-                // O T-Rex vê mais longe durante o dia
-                const currentDetectionRadius = this.state.act === 3 ? 15 : this.detectionRadius; 
-                const canSeePlayer = distToPlayer < currentDetectionRadius && !isPlayerHiding;
+                
+                let currentDetect = this.detectionRadius;
+                if (isPlayerHiding) currentDetect = 0; 
+                else if (this.player.isMoving && this.constructor.name === 'TRexAI') currentDetect *= 1.5;
+
+                const canSeePlayer = distToPlayer < currentDetect;
 
                 if (canSeePlayer) this.aiState = 'CHASE';
-                else if (distToPlayer > currentDetectionRadius * 1.5) this.aiState = 'PATROL';
+                else if (distToPlayer > currentDetect * 2) this.aiState = 'PATROL';
 
                 if (this.aiState === 'CHASE') {
                     this.direction.subVectors(this.player.camera.position, this.group.position).setY(0).normalize();
                     this.group.position.addScaledVector(this.direction, this.speed * delta);
                     
-                    if (distToPlayer < 4) { // T-Rex é maior, hitbox maior
+                    if (distToPlayer < 4) {
                         this.player.state.isGameOver = true;
                         document.getElementById('game-over-screen').classList.remove('hidden');
                         document.exitPointerLock();
                     }
                 } else {
                     this.direction.subVectors(this.targetNode, this.group.position).setY(0);
-                    if (this.direction.length() < 2) {
-                        this.pickNewTarget();
-                    } else {
+                    if (this.direction.length() < 2) this.pickNewTarget();
+                    else {
                         this.direction.normalize();
                         this.group.position.addScaledVector(this.direction, this.patrolSpeed * delta);
                     }
@@ -581,43 +619,52 @@
 
                 if (this.direction.length() > 0) {
                     const lookAtPos = this.group.position.clone().add(this.direction);
-                    const targetRotation = Math.atan2(lookAtPos.x - this.group.position.x, lookAtPos.z - this.group.position.z);
-                    this.group.rotation.y = targetRotation;
+                    this.group.rotation.y = Math.atan2(lookAtPos.x - this.group.position.x, lookAtPos.z - this.group.position.z);
                 }
 
-                // Cola no chão
                 this.raycaster.set(this.group.position.clone().setY(50), this.downVector);
                 const intersects = this.raycaster.intersectObjects(this.scene.children, true);
                 if (intersects.length > 0) this.group.position.y = intersects[0].point.y;
             }
         }
 
+        class RaptorAI extends BaseDino {
+            constructor(scene, player, state) {
+                super(scene, player, state, './archie_the_velociraptor.glb', 1.0, 9, 18);
+                this.group.position.set(20, 0, 20);
+            }
+        }
+
+        class TRexAI extends BaseDino {
+            constructor(scene, player, state) {
+                super(scene, player, state, './t_rex.glb', 1.5, 6, 30);
+                this.group.position.set(0, 0, -40);
+            }
+        }
+
         // ==========================================
-        // JOGADOR (FÍSICA E INTERAÇÕES)
+        // JOGADOR
         // ==========================================
         class Player {
-            constructor(camera, scene, collidables, gameState) {
-                this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = gameState;
+            constructor(camera, scene, collidables, state) {
+                this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = state;
                 this.controls = new PointerLockControls(camera, document.body);
                 this.velocity = new THREE.Vector3();
-                this.moveForward = false; this.moveBackward = false;
-                this.moveLeft = false; this.moveRight = false;
-                this.isCrouching = false;
+                this.moveForward = false; this.moveBackward = false; this.moveLeft = false; this.moveRight = false;
+                this.isCrouching = false; this.isMoving = false;
                 
                 this.playerBox = new THREE.Box3();
                 this.hitboxSize = new THREE.Vector3(1, 2, 1);
 
-                // Lanterna
                 this.flashlight = new THREE.SpotLight(0xffffff, 15, 45, Math.PI / 5, 0.4, 1.5);
                 this.flashlight.castShadow = true;
                 this.camera.add(this.flashlight);
                 this.flashlightTarget = new THREE.Object3D();
                 this.scene.add(this.flashlightTarget);
                 this.flashlight.target = this.flashlightTarget;
-
-                this.battery = 100;
-                this.isFlashlightOn = false; // Começa desligada (é dia)
                 this.flashlight.visible = false;
+
+                this.battery = 100; this.isFlashlightOn = false;
                 this.batteryFill = document.getElementById('battery-fill');
 
                 this.raycaster = new THREE.Raycaster();
@@ -632,15 +679,14 @@
             }
 
             onKeyDown(event) {
-                if (this.state.isGameOver || this.state.isWin) return;
+                if (this.state.isGameOver || this.state.isWin || this.state.isCinematic) return;
                 switch (event.code) {
                     case 'KeyW': this.moveForward = true; break;
                     case 'KeyS': this.moveBackward = true; break;
                     case 'KeyA': this.moveLeft = true; break;
                     case 'KeyD': this.moveRight = true; break;
                     case 'ShiftLeft':
-                        this.isCrouching = true;
-                        this.camera.position.y = 1; this.hitboxSize.y = 1;
+                        this.isCrouching = true; this.camera.position.y = 1; this.hitboxSize.y = 1;
                         break;
                     case 'KeyF':
                         if (this.battery > 0) {
@@ -658,14 +704,13 @@
                     case 'KeyA': this.moveLeft = false; break;
                     case 'KeyD': this.moveRight = false; break;
                     case 'ShiftLeft':
-                        this.isCrouching = false;
-                        this.camera.position.y = 2; this.hitboxSize.y = 2;
+                        this.isCrouching = false; this.camera.position.y = 2; this.hitboxSize.y = 2;
                         break;
                 }
             }
 
             update(delta, time, environment, narrative) {
-                if (!this.controls.isLocked || this.state.isGameOver) return;
+                if (!this.controls.isLocked || this.state.isGameOver || this.state.isCinematic) return;
 
                 const damping = 10.0;
                 this.velocity.x -= this.velocity.x * damping * delta;
@@ -678,48 +723,34 @@
                 this.velocity.z -= dirZ * speed * delta;
                 this.velocity.x -= dirX * speed * delta;
 
+                this.isMoving = (dirZ !== 0 || dirX !== 0);
+
                 const oldPos = this.camera.position.clone();
                 this.controls.moveRight(-this.velocity.x * delta);
                 this.controls.moveForward(-this.velocity.z * delta);
 
-                this.playerBox.setFromCenterAndSize(
-                    new THREE.Vector3(this.camera.position.x, this.camera.position.y - 1, this.camera.position.z),
-                    this.hitboxSize
-                );
+                this.playerBox.setFromCenterAndSize(new THREE.Vector3(this.camera.position.x, this.camera.position.y - 1, this.camera.position.z), this.hitboxSize);
 
                 let collision = false;
-                this.collidables.forEach(box => {
-                    if (this.playerBox.intersectsBox(box)) collision = true;
-                });
+                this.collidables.forEach(box => { if (this.playerBox.intersectsBox(box)) collision = true; });
 
-                if (collision) {
-                    this.camera.position.copy(oldPos);
-                    this.velocity.set(0, 0, 0);
-                }
+                if (collision) { this.camera.position.copy(oldPos); this.velocity.set(0, 0, 0); }
 
-                // Colar no chão
                 this.raycaster.set(this.camera.position.clone().setY(this.camera.position.y + 5), this.downVector);
                 const intersects = this.raycaster.intersectObjects(this.scene.children, true);
                 if (intersects.length > 0) {
-                    const groundY = intersects[0].point.y;
-                    this.camera.position.y = groundY + (this.isCrouching ? 1 : 2);
+                    this.camera.position.y = intersects[0].point.y + (this.isCrouching ? 1 : 2);
                 }
 
-                // Lanterna
                 if (this.isFlashlightOn && this.battery > 0) {
                     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
                     const targetPos = this.camera.position.clone().add(forward.multiplyScalar(10));
-                    
                     targetPos.x += Math.sin(time * 8) * 0.3; targetPos.y += Math.cos(time * 6) * 0.3;
                     this.flashlightTarget.position.lerp(targetPos, 0.5);
                     
-                    this.battery -= 1.0 * delta; // Consumo mais lento
+                    this.battery -= 1.0 * delta;
                     this.batteryFill.style.width = `${Math.max(0, this.battery)}%`;
-                    
-                    if (this.battery <= 0) {
-                        this.battery = 0; this.isFlashlightOn = false; this.flashlight.visible = false;
-                        narrative.triggerRadio();
-                    }
+                    if (this.battery <= 0) { this.battery = 0; this.isFlashlightOn = false; this.flashlight.visible = false; }
                 }
 
                 this.checkInteraction(environment, narrative);
@@ -729,28 +760,21 @@
                 const prompt = document.getElementById('interaction-prompt');
                 let canInteract = false;
 
-                // Itens
                 for (let i = environment.collectibles.length - 1; i >= 0; i--) {
                     const item = environment.collectibles[i];
                     if (this.camera.position.distanceTo(item.position) < 3) {
-                        canInteract = true;
-                        prompt.classList.remove('hidden');
-                        
+                        canInteract = true; prompt.classList.remove('hidden');
                         if (window.keys['KeyE']) {
                             if (item.userData.type === 'datapad') narrative.showDataPad(item.userData.id);
-                            else if (item.userData.type === 'fuse') {
-                                this.state.hasFuse = true; narrative.updateHUD(); narrative.triggerRadio();
-                            }
+                            else if (item.userData.type === 'fuse') { this.state.hasFuse = true; narrative.updateHUD(); }
                             environment.scene.remove(item); environment.collectibles.splice(i, 1);
                             window.keys['KeyE'] = false; break;
                         }
                     }
                 }
 
-                // Caixa de Fusível
                 if (this.camera.position.distanceTo(environment.fuseBoxPos) < 3.5) {
-                    canInteract = true;
-                    prompt.classList.remove('hidden'); prompt.innerText = "[E] Colocar Fusível";
+                    canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Colocar Fusível";
                     if (window.keys['KeyE']) {
                         environment.interact(this.camera.position, narrative);
                         if (this.state.gateOpen && this.state.datapads === 5) {
@@ -761,19 +785,6 @@
                         window.keys['KeyE'] = false;
                     }
                 }
-
-                // NPCs
-                environment.npcs.forEach(npc => {
-                    if (this.camera.position.distanceTo(npc.mesh.position) < 3.5) {
-                        canInteract = true;
-                        prompt.classList.remove('hidden'); prompt.innerText = "[E] Conversar";
-                        if (window.keys['KeyE']) {
-                            narrative.showDialogue(npc.name, npc.line);
-                            window.keys['KeyE'] = false;
-                        }
-                    }
-                });
-
                 if (!canInteract) prompt.classList.add('hidden');
             }
         }
@@ -789,7 +800,6 @@
             constructor() {
                 this.container = document.getElementById('game-container');
                 this.scene = new THREE.Scene();
-                
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 300);
                 this.camera.position.set(0, 2, 10);
 
@@ -807,19 +817,29 @@
             }
 
             init() {
-                this.narrative = new NarrativeManager(this.gameState);
+                this.narrative = new NarrativeManager(this.gameState, this.camera);
                 this.environment = new Environment(this.scene, this.gameState, this.narrative);
                 this.player = new Player(this.camera, this.scene, this.environment.collidables, this.gameState);
-                this.enemy = new EnemyAI(this.scene, this.player, this.gameState);
+                
+                this.raptor = null;
+                this.trex = null;
 
-                // Inicializa a luz do Ato 1
                 this.environment.updateLighting();
 
+                // Botão do Menu para iniciar o jogo
                 document.getElementById('start-btn').addEventListener('click', () => {
-                    document.getElementById('start-screen').style.display = 'none';
-                    document.getElementById('hud').classList.remove('hidden');
-                    this.player.controls.lock();
-                    this.narrative.triggerRadio();
+                    const menu = document.getElementById('main-menu');
+                    menu.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        menu.classList.add('hidden');
+                        document.getElementById('hud').classList.remove('hidden');
+                        
+                        this.narrative.playIntroCutscene(() => {
+                            this.player.controls.lock();
+                            this.narrative.triggerRadio("Vance, comece a procurar os dados. O tempo está contra nós.");
+                        });
+                    }, 1000); // Tempo para a transição de fade
                 });
 
                 window.addEventListener('resize', () => this.onWindowResize());
@@ -837,13 +857,29 @@
                 const delta = Math.min(this.clock.getDelta(), 0.1);
                 const time = this.clock.getElapsedTime();
 
+                // Só roda a lógica se o menu já sumiu
+                if (!document.getElementById('main-menu').classList.contains('hidden')) return;
+
                 if (!this.gameState.isGameOver && !this.gameState.isWin) {
                     this.player.update(delta, time, this.environment, this.narrative);
-                    this.enemy.update(delta, time);
                     this.environment.update(time);
-                    
-                    // Atualiza a iluminação caso o tempo tenha mudado (Lore Pads coletados)
                     this.environment.updateLighting();
+
+                    if (this.gameState.act >= 2 && !this.raptor) {
+                        this.raptor = new RaptorAI(this.scene, this.player, this.gameState);
+                    }
+                    if (this.gameState.act === 3 && !this.trex) {
+                        this.trex = new TRexAI(this.scene, this.player, this.gameState);
+                    }
+
+                    if (this.raptor) this.raptor.update(delta, time);
+                    if (this.trex) {
+                        this.trex.update(delta, time);
+                        if (this.trex.group.position.distanceTo(this.camera.position) < 20) {
+                            this.camera.position.x += (Math.random() - 0.5) * 0.1;
+                            this.camera.position.z += (Math.random() - 0.5) * 0.1;
+                        }
+                    }
                 }
 
                 this.renderer.render(this.scene, this.camera);
