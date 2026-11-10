@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jurassic Park: Biosyn Protocol - Apocalyptic Storm</title>
+    <title>Jurassic Park: Biosyn Protocol - Ultimate Survival</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
@@ -14,6 +14,21 @@
         /* Overlay CRT/PSX */
         #psx-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; background: radial-gradient(circle, rgba(0,0,0,0) 30%, rgba(0,0,10,0.95) 100%), linear-gradient(rgba(0, 10, 20, 0.2) 50%, rgba(0, 0, 0, 0.4) 50%); background-size: 100% 100%, 100% 3px; }
         #lightning-flash { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: #e0f0ff; opacity: 0; pointer-events: none; z-index: 15; }
+        
+        /* CHUVA NA LENTE */
+        .lens-drop {
+            position: absolute; width: 4px; height: 15px; background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%; filter: blur(1px); z-index: 11; pointer-events: none;
+            animation: drop-fall linear infinite;
+        }
+        @keyframes drop-fall {
+            0% { top: -20px; opacity: 0; }
+            10% { opacity: 1; }
+            100% { top: 105vh; opacity: 0; }
+        }
+
+        /* Jumpscare Overlay */
+        #jumpscare-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: red; opacity: 0; pointer-events: none; z-index: 100; mix-blend-mode: multiply; transition: opacity 0.1s; }
 
         /* MENU */
         .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: flex; background-color: transparent; transition: opacity 0.5s ease; }
@@ -48,6 +63,12 @@
         .battery-bar { width: 150px; height: 15px; background: #333; margin-top: 5px; border: 1px solid #00ff00; }
         #battery-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.1s, background-color 0.3s; }
         
+        #stamina-ui { position: absolute; bottom: 30px; left: 200px; background: rgba(0,0,0,0.6); padding: 10px; border: 1px solid #00ff00; }
+        .stamina-bar { width: 150px; height: 15px; background: #333; margin-top: 5px; border: 1px solid #00ff00; }
+        #stamina-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.1s, background-color 0.3s; }
+
+        #inventory-ui { position: absolute; top: 30px; left: 250px; background: rgba(0,0,0,0.7); padding: 10px; border-left: 4px solid #ffaa00; font-size: 18px; color: #fff; }
+        
         #objectives { position: absolute; top: 30px; right: 30px; background: rgba(0,0,0,0.7); padding: 15px; border-left: 4px solid #00ff00; text-align: right; font-size: 18px; }
         #act-indicator { font-size: 24px; color: #ffff00; margin-bottom: 10px; }
         #radio-ui { position: absolute; bottom: 30px; right: 30px; width: 350px; background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #ff0000; }
@@ -61,7 +82,7 @@
         #joystick-knob { width: 60px; height: 60px; border-radius: 50%; background: rgba(0, 255, 0, 0.5); position: absolute; top: 45px; left: 45px; box-shadow: 0 0 10px #00ff00; }
         
         #action-buttons { position: absolute; bottom: 30px; right: 30px; display: flex; flex-wrap: wrap; width: 180px; gap: 10px; pointer-events: auto; justify-content: flex-end; }
-        .mob-btn { width: 60px; height: 60px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid #00ff00; color: #00ff00; font-family: 'VT323'; font-size: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .mob-btn { width: 60px; height: 60px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid #00ff00; color: #00ff00; font-family: 'VT323'; font-size: 14px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
         .mob-btn:active { background: #00ff00; color: #000; }
 
         /* PAUSE E MODAIS */
@@ -84,8 +105,14 @@
     </style>
 </head>
 <body>
+    <!-- Efeitos Visuais -->
     <div id="lightning-flash"></div>
+    <div id="jumpscare-overlay"></div>
     <div id="psx-overlay"></div>
+    
+    <!-- Chuva na Lente (Gerada via JS) -->
+    <div id="lens-rain"></div>
+
     <div id="game-container"></div>
 
     <div id="letterbox-top" class="letterbox"></div>
@@ -133,6 +160,15 @@
             <div class="battery-bar"><div id="battery-fill"></div></div>
         </div>
 
+        <div id="stamina-ui">
+            <span>VIGOR</span>
+            <div class="stamina-bar"><div id="stamina-fill"></div></div>
+        </div>
+
+        <div id="inventory-ui">
+            <span>🔦 Sinalizadores: 0</span>
+        </div>
+
         <div id="objectives">
             <div id="act-indicator">ATO I - TARDE</div>
             <div id="obj-pads">Data Pads: 0/5</div>
@@ -154,6 +190,7 @@
             <button class="mob-btn" id="btn-mob-sprint">CORRER</button>
             <button class="mob-btn" id="btn-mob-crouch">AGACHAR</button>
             <button class="mob-btn" id="btn-mob-flash">LUZ</button>
+            <button class="mob-btn" id="btn-mob-rock" style="border-color: #ffaa00; color: #ffaa00;">PEDRA</button>
             <button class="mob-btn" id="btn-mob-interact" style="border-color: #ffff00; color: #ffff00;">AÇÃO</button>
         </div>
     </div>
@@ -172,15 +209,16 @@
         <button onclick="document.getElementById('ui-modal').classList.add('hidden'); document.getElementById('game-container').requestPointerLock();">FECHAR</button>
     </div>
 
+    <!-- TELAS FINAIS -->
     <div id="game-over-screen" class="screen hidden">
-        <h1>VOCÊ FOI DEVORADO</h1>
-        <p>A cadeia alimentar foi restaurada.</p>
+        <h1 id="gameover-title">VOCÊ FOI DEVORADO</h1>
+        <p id="gameover-desc">A cadeia alimentar foi restaurada.</p>
         <button onclick="location.reload()">TENTAR NOVAMENTE</button>
     </div>
 
     <div id="win-screen" class="screen hidden">
-        <h1>EXTRAÇÃO BEM-SUCEDIDA</h1>
-        <p>Você fugiu de Isla Nublar com os dados da InGen.</p>
+        <h1 id="win-title">EXTRAÇÃO BEM-SUCEDIDA</h1>
+        <p id="win-desc">Você fugiu de Isla Nublar com os dados da InGen.</p>
         <button onclick="location.reload()">JOGAR NOVAMENTE</button>
     </div>
 
@@ -199,25 +237,92 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         // ==========================================
-        // VARIÁVEIS GLOBAIS E MOBILE
+        // VARIÁVEIS E ÁUDIO
         // ==========================================
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
-        let weatherSettings = {
-            rain: 1, // 0=Off, 1=Normal, 2=Torrential
-            lightning: 1 // 0=Off, 1=Normal, 2=Apocalyptic
-        };
+        let weatherSettings = { rain: 1, lightning: 1 };
+        if (isMobile) document.getElementById('controls-text').innerHTML = "TOQUE: Joystick Esq | Olhar Dir<br>Ações na tela.";
 
-        if (isMobile) {
-            document.getElementById('controls-text').innerHTML = "CONTROLES MOBILE:<br>Joystick: Mover<br>Arrastar na tela: Olhar<br>Botões na tela para ações.";
-            document.getElementById('btn-mob-flash').innerText = "F";
+        class AudioManager {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.value = 0.3;
+                this.masterGain.connect(this.ctx.destination);
+                this.heartbeatInterval = null;
+            }
+            playStep(isRunning) {
+                if(!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(isRunning ? 80 : 50, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+            }
+            playThunder() {
+                if(!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(40, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(5, this.ctx.currentTime + 2);
+                gain.gain.setValueAtTime(1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 2);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 2);
+            }
+            playRoar() {
+                if(!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 1.5);
+                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 1.5);
+            }
+            startHeartbeat() {
+                if(this.heartbeatInterval) return;
+                this.heartbeatInterval = setInterval(() => {
+                    if(!this.ctx) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine'; osc.frequency.value = 60;
+                    gain.gain.setValueAtTime(1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                    osc.connect(gain); gain.connect(this.masterGain);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+                }, 400); // Bate rápido
+            }
+            stopHeartbeat() {
+                clearInterval(this.heartbeatInterval);
+                this.heartbeatInterval = null;
+            }
+            playPickup() {
+                if(!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+            }
         }
 
         class GameState {
             constructor() {
-                this.datapads = 0; this.isGameOver = false; this.isWin = false;
+                this.datapads = 0; this.flares = 0; this.isGameOver = false; this.isWin = false;
                 this.isPaused = false; this.isCinematic = false; this.isMenuActive = true;
-                this.act = 1;
+                this.act = 1; this.isJumpscareActive = false;
             }
         }
 
@@ -229,7 +334,6 @@
                 this.canvas = document.getElementById(canvasId);
                 this.ctx = this.canvas.getContext('2d');
             }
-
             draw(playerPos, playerRotationY, entities, items, shipPos) {
                 this.ctx.clearRect(0, 0, 200, 200);
                 this.ctx.fillStyle = 'rgba(0, 20, 0, 0.9)'; 
@@ -243,51 +347,39 @@
                 this.ctx.rotate(playerRotationY);
 
                 const mapScale = 0.08;
-                
                 this.drawPoint(shipPos, playerPos, '#00aaff', 6, mapScale);
                 items.forEach(item => this.drawPoint(item.position, playerPos, '#00ff00', 3, mapScale));
                 entities.forEach(ent => {
-                    if(ent.group && ent.group.parent) {
-                        this.drawPoint(ent.group.position, playerPos, '#ff0000', ent.constructor.name === 'TRexAI' ? 7 : 4, mapScale);
-                    }
+                    if(ent.group && ent.group.parent) this.drawPoint(ent.group.position, playerPos, '#ff0000', ent.constructor.name === 'TRexAI' ? 7 : 4, mapScale);
                 });
-
                 this.ctx.restore();
 
                 this.ctx.fillStyle = '#fff';
-                this.ctx.beginPath(); 
-                this.ctx.moveTo(100, 88); this.ctx.lineTo(106, 105); this.ctx.lineTo(94, 105); 
-                this.ctx.closePath(); this.ctx.fill();
+                this.ctx.beginPath(); this.ctx.moveTo(100, 88); this.ctx.lineTo(106, 105); this.ctx.lineTo(94, 105); this.ctx.closePath(); this.ctx.fill();
             }
-
             drawPoint(pos, playerPos, color, size, scale) {
-                let dx = (pos.x - playerPos.x) * scale;
-                let dz = (pos.z - playerPos.z) * scale;
+                let dx = (pos.x - playerPos.x) * scale; let dz = (pos.z - playerPos.z) * scale;
                 let dist = Math.sqrt(dx*dx + dz*dz);
                 if (dist > 90) { dx = (dx/dist) * 90; dz = (dz/dist) * 90; }
-                this.ctx.fillStyle = color; 
-                this.ctx.beginPath(); this.ctx.arc(dx, dz, size, 0, Math.PI * 2); this.ctx.fill();
+                this.ctx.fillStyle = color; this.ctx.beginPath(); this.ctx.arc(dx, dz, size, 0, Math.PI * 2); this.ctx.fill();
             }
         }
 
         // ==========================================
-        // AMBIENTE (ESCURO E CHUVOSO)
+        // AMBIENTE (CARCAÇAS E CAIXAS)
         // ==========================================
         class Environment {
             constructor(scene, state, narrative) {
                 this.scene = scene; this.state = state; this.narrative = narrative;
-                this.collidables = []; this.collectibles = []; this.walkableMeshes = [];
+                this.collidables = []; this.collectibles = []; this.walkableMeshes = []; this.lootBoxes = [];
                 
-                // ILUMINAÇÃO QUASE ZERO (Dependência total da lanterna)
                 this.sunLight = new THREE.DirectionalLight(0x112233, 0.05); 
                 this.sunLight.castShadow = true;
                 this.sunLight.shadow.mapSize.width = 1024; this.sunLight.shadow.mapSize.height = 1024;
                 this.scene.add(this.sunLight);
-                
                 this.hemiLight = new THREE.HemisphereLight(0x112233, 0x000000, 0.05);
                 this.scene.add(this.hemiLight);
 
-                // NÉVOA MENOS DENSA PARA A LANTERNA PODER ATRAVESSAR
                 this.scene.fog = new THREE.FogExp2(0x0a1128, 0.015); 
                 this.scene.background = new THREE.Color(0x0a1128);
 
@@ -299,6 +391,8 @@
                 this.buildZone4_Lagoon();
                 this.buildMonorail();
                 this.buildItems();
+                this.buildDeadDinosaurs(); // NOVO
+                this.buildLootBoxes(); // NOVO
                 this.buildHeavyRain();
             }
 
@@ -317,7 +411,7 @@
                     pos.setZ(i, z);
                 }
                 geo.computeVertexNormals();
-                const mat = new THREE.MeshStandardMaterial({ color: 0x1a2a1a, roughness: 1, flatShading: true }); // Grama escura
+                const mat = new THREE.MeshStandardMaterial({ color: 0x1a2a1a, roughness: 1, flatShading: true }); 
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.rotation.x = -Math.PI / 2; mesh.receiveShadow = true;
                 this.scene.add(mesh);
@@ -332,16 +426,12 @@
 
                 treeLeavesMat.onBeforeCompile = (shader) => {
                     shader.uniforms.time = { value: 0 };
-                    shader.vertexShader = `
-                        uniform float time;
-                        ${shader.vertexShader}
-                    `.replace(
+                    shader.vertexShader = `uniform float time; ${shader.vertexShader}`.replace(
                         `#include <begin_vertex>`,
                         `#include <begin_vertex>
                         float angle = sin(time * 4.0 + position.x + position.z) * 0.3;
                         transformed.x += sin(angle) * position.y * 0.4;
-                        transformed.z += cos(angle) * position.y * 0.4;
-                        `
+                        transformed.z += cos(angle) * position.y * 0.4;`
                     );
                     treeLeavesMat.userData.shader = shader;
                 };
@@ -354,9 +444,7 @@
                 let spawned = 0;
 
                 for (let i = 0; i < numTrees; i++) {
-                    const x = (Math.random() - 0.5) * 1800;
-                    const z = (Math.random() - 0.5) * 1800;
-                    
+                    const x = (Math.random() - 0.5) * 1800; const z = (Math.random() - 0.5) * 1800;
                     if (Math.abs(x) < 150 && Math.abs(z) < 150) continue; 
                     if (Math.abs(x) < 200 && z < -600) continue; 
                     if (x < -400 && Math.abs(z) < 400) continue; 
@@ -366,23 +454,57 @@
                     const scale = 0.8 + Math.random() * 1.5;
 
                     dummy.position.set(x, y + 10 * scale, z);
-                    dummy.scale.set(scale, scale, scale);
-                    dummy.rotation.y = Math.random() * Math.PI;
-                    dummy.updateMatrix();
-                    trunks.setMatrixAt(spawned, dummy.matrix);
+                    dummy.scale.set(scale, scale, scale); dummy.rotation.y = Math.random() * Math.PI;
+                    dummy.updateMatrix(); trunks.setMatrixAt(spawned, dummy.matrix);
 
                     dummy.position.set(x, y + 25 * scale, z);
-                    dummy.updateMatrix();
-                    leaves.setMatrixAt(spawned, dummy.matrix);
+                    dummy.updateMatrix(); leaves.setMatrixAt(spawned, dummy.matrix);
                     
                     this.collidables.push(new THREE.Box3(
                         new THREE.Vector3(x - 2*scale, y - 10, z - 2*scale),
                         new THREE.Vector3(x + 2*scale, y + 20*scale, z + 2*scale)
                     ));
-
                     spawned++;
                 }
                 this.scene.add(trunks); this.scene.add(leaves);
+            }
+
+            buildDeadDinosaurs() {
+                const boneMat = new THREE.MeshStandardMaterial({ color: 0xddddcc, roughness: 0.8, flatShading: true });
+                const spawnPoints = [
+                    new THREE.Vector3(50, 0, -50), new THREE.Vector3(-150, 0, 100),
+                    new THREE.Vector3(400, 0, -400), new THREE.Vector3(-600, 0, -200)
+                ];
+
+                spawnPoints.forEach(pos => {
+                    const carcass = new THREE.Group();
+                    // Costelas
+                    for(let i=0; i<6; i++) {
+                        const rib = new THREE.Mesh(new THREE.TorusGeometry(2, 0.2, 4, 8, Math.PI), boneMat);
+                        rib.position.set(0, 1, i * 2 - 5); rib.rotation.x = Math.PI/2; rib.rotation.y = Math.PI/4;
+                        carcass.add(rib);
+                    }
+                    // Crânio
+                    const skull = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5, 0), boneMat);
+                    skull.position.set(0, 1, 8); carcass.add(skull);
+                    
+                    carcass.position.copy(pos);
+                    carcass.position.y = Math.sin(pos.x * 0.01) * Math.cos(pos.z * 0.01) * 15;
+                    this.scene.add(carcass);
+                });
+            }
+
+            buildLootBoxes() {
+                const boxMat = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.8, roughness: 0.4 });
+                for(let i=0; i<10; i++) {
+                    const box = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), boxMat);
+                    const x = (Math.random()-0.5)*1000; const z = (Math.random()-0.5)*1000;
+                    box.position.set(x, Math.sin(x*0.01)*Math.cos(z*0.01)*15 + 0.75, z);
+                    box.castShadow = true; box.receiveShadow = true;
+                    box.userData = { type: 'lootbox', opened: false };
+                    this.scene.add(box);
+                    this.lootBoxes.push(box);
+                }
             }
 
             buildHeavyRain() {
@@ -391,37 +513,22 @@
                 this.rainPositions = new Float32Array(this.maxRainCount * 6);
 
                 for (let i = 0; i < this.maxRainCount; i++) {
-                    const x = (Math.random() - 0.5) * 400;
-                    const y = Math.random() * 200;
-                    const z = (Math.random() - 0.5) * 400;
-                    
-                    this.rainPositions[i * 6] = x;
-                    this.rainPositions[i * 6 + 1] = y;
-                    this.rainPositions[i * 6 + 2] = z;
-                    
-                    this.rainPositions[i * 6 + 3] = x;
-                    this.rainPositions[i * 6 + 4] = y - 3;
-                    this.rainPositions[i * 6 + 5] = z;
+                    const x = (Math.random() - 0.5) * 400; const y = Math.random() * 200; const z = (Math.random() - 0.5) * 400;
+                    this.rainPositions[i * 6] = x; this.rainPositions[i * 6 + 1] = y; this.rainPositions[i * 6 + 2] = z;
+                    this.rainPositions[i * 6 + 3] = x; this.rainPositions[i * 6 + 4] = y - 3; this.rainPositions[i * 6 + 5] = z;
                 }
-
                 this.rainGeo.setAttribute('position', new THREE.BufferAttribute(this.rainPositions, 3));
                 this.rainMat = new THREE.LineBasicMaterial({ color: 0xaaccff, transparent: true, opacity: 0.6 });
                 this.rain = new THREE.LineSegments(this.rainGeo, this.rainMat);
-                
-                this.updateWeatherSettings();
-                this.scene.add(this.rain);
+                this.updateWeatherSettings(); this.scene.add(this.rain);
             }
 
             updateWeatherSettings() {
                 if (weatherSettings.rain === 0) this.rain.visible = false;
                 else if (weatherSettings.rain === 1) {
-                    this.rain.visible = true;
-                    this.rainGeo.setDrawRange(0, 5000 * 2);
-                    this.rainMat.opacity = 0.5;
+                    this.rain.visible = true; this.rainGeo.setDrawRange(0, 5000 * 2); this.rainMat.opacity = 0.5;
                 } else {
-                    this.rain.visible = true;
-                    this.rainGeo.setDrawRange(0, this.maxRainCount * 2);
-                    this.rainMat.opacity = 0.8;
+                    this.rain.visible = true; this.rainGeo.setDrawRange(0, this.maxRainCount * 2); this.rainMat.opacity = 0.8;
                 }
             }
 
@@ -471,11 +578,8 @@
                 const padGeo = new THREE.BoxGeometry(2, 3, 0.5);
                 const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
                 const padPositions = [
-                    new THREE.Vector3(0, 2, 60),
-                    new THREE.Vector3(0, 250, -800), 
-                    new THREE.Vector3(-600, 2, 0),
-                    new THREE.Vector3(700, 2, 700),
-                    new THREE.Vector3(300, 65, -300) 
+                    new THREE.Vector3(0, 2, 60), new THREE.Vector3(0, 250, -800), 
+                    new THREE.Vector3(-600, 2, 0), new THREE.Vector3(700, 2, 700), new THREE.Vector3(300, 65, -300) 
                 ];
 
                 padPositions.forEach((pos, i) => {
@@ -498,113 +602,82 @@
             }
 
             updateLighting() {
-                // Ambiente apocalíptico constante
                 this.scene.background = new THREE.Color(0x0a1128);
-                this.scene.fog.color.setHex(0x0a1128);
-                this.scene.fog.density = 0.015;
+                this.scene.fog.color.setHex(0x0a1128); this.scene.fog.density = 0.015;
                 this.sunLight.intensity = 0.05;
             }
 
-            update(delta, time, playerPos) {
+            update(delta, time, playerPos, audio) {
                 this.scene.traverse((child) => {
-                    if (child.material && child.material.userData.shader) {
-                        child.material.userData.shader.uniforms.time.value = time;
-                    }
+                    if (child.material && child.material.userData.shader) child.material.userData.shader.uniforms.time.value = time;
                 });
 
                 if (!this.rain.visible) return;
                 this.rain.position.copy(playerPos);
-
                 const positions = this.rain.geometry.attributes.position.array;
                 const countToRender = weatherSettings.rain === 1 ? 5000 : this.maxRainCount;
 
                 for(let i=0; i < countToRender * 6; i += 6) {
-                    positions[i+1] -= 150 * delta; 
-                    positions[i+4] -= 150 * delta; 
-                    positions[i] -= 20 * delta;
-                    positions[i+3] -= 20 * delta;
+                    positions[i+1] -= 150 * delta; positions[i+4] -= 150 * delta; 
+                    positions[i] -= 20 * delta; positions[i+3] -= 20 * delta;
 
                     if(positions[i+1] < -20) {
-                        const newX = (Math.random() - 0.5) * 400;
-                        const newY = 200 + Math.random() * 50;
-                        const newZ = (Math.random() - 0.5) * 400;
-                        
+                        const newX = (Math.random() - 0.5) * 400; const newY = 200 + Math.random() * 50; const newZ = (Math.random() - 0.5) * 400;
                         positions[i] = newX; positions[i+1] = newY; positions[i+2] = newZ;
                         positions[i+3] = newX; positions[i+4] = newY - 3; positions[i+5] = newZ;
                     }
                 }
                 this.rain.geometry.attributes.position.needsUpdate = true;
 
-                let lightningChance = 0;
-                if (weatherSettings.lightning === 1) lightningChance = 0.005;
-                if (weatherSettings.lightning === 2) lightningChance = 0.015;
-
+                let lightningChance = weatherSettings.lightning === 1 ? 0.005 : (weatherSettings.lightning === 2 ? 0.015 : 0);
                 if (Math.random() < lightningChance) {
-                    const flashEl = document.getElementById('lightning-flash');
-                    flashEl.style.transition = 'none';
-                    flashEl.style.opacity = '1';
-                    this.sunLight.intensity = 2; // Flash
+                    document.getElementById('lightning-flash').style.transition = 'none';
+                    document.getElementById('lightning-flash').style.opacity = '1';
+                    this.sunLight.intensity = 2; 
+                    if(audio) audio.playThunder();
                     
                     setTimeout(() => {
-                        flashEl.style.transition = 'opacity 0.5s';
-                        flashEl.style.opacity = '0';
+                        document.getElementById('lightning-flash').style.transition = 'opacity 0.5s';
+                        document.getElementById('lightning-flash').style.opacity = '0';
                         this.updateLighting();
-                        
-                        const cam = this.scene.getObjectByProperty('type', 'PerspectiveCamera');
-                        if(cam) {
-                            cam.position.x += (Math.random() - 0.5) * 3;
-                            cam.position.y += (Math.random() - 0.5) * 3;
-                        }
                     }, 100);
                 }
             }
         }
 
         // ==========================================
-        // JOGADOR (LANTERNA REALISTA E CONE DE LUZ)
+        // JOGADOR (STAMINA, PEDRAS E LANTERNA)
         // ==========================================
         class Player {
-            constructor(camera, scene, env, state) {
-                this.camera = camera; this.scene = scene; this.env = env; this.state = state;
+            constructor(camera, scene, env, state, audio) {
+                this.camera = camera; this.scene = scene; this.env = env; this.state = state; this.audio = audio;
                 
-                if (!isMobile) {
-                    this.controls = new PointerLockControls(camera, document.body);
-                }
+                if (!isMobile) this.controls = new PointerLockControls(camera, document.body);
                 
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isCrouching = false; this.isSprinting = false; this.isMoving = false;
                 this.bobTimer = 0; this.baseY = 4.0;
                 
+                this.stamina = 100; this.isExhausted = false;
+                this.staminaFill = document.getElementById('stamina-fill');
+                
                 this.playerBox = new THREE.Box3(); this.hitboxSize = new THREE.Vector3(2, 4, 2);
 
-                // LANTERNA
+                // Lanterna
                 this.flashlight = new THREE.SpotLight(0xffeedd, 3000, 80, Math.PI / 5, 0.5, 1.5);
                 this.flashlight.castShadow = true;
-                this.flashlight.shadow.mapSize.width = 512;
-                this.flashlight.shadow.mapSize.height = 512;
+                this.flashlight.shadow.mapSize.width = 512; this.flashlight.shadow.mapSize.height = 512;
                 this.flashlight.shadow.bias = -0.005;
                 this.camera.add(this.flashlight);
-                
-                // O alvo da luz agora é um filho da câmera para apontar sempre para frente
-                this.flashlight.target.position.set(0, 0, -1);
-                this.camera.add(this.flashlight.target);
+                this.flashlight.target.position.set(0, 0, -1); this.camera.add(this.flashlight.target);
                 this.flashlight.visible = false;
 
-                // CONE VOLUMÉTRICO (Efeito visual de feixe de luz)
+                // Cone Volumétrico
                 const coneGeo = new THREE.CylinderGeometry(0.1, 5, 30, 16, 1, true);
-                coneGeo.translate(0, -15, 0);
-                coneGeo.rotateX(Math.PI / 2);
-                const coneMat = new THREE.MeshBasicMaterial({ 
-                    color: 0xffffdd, 
-                    transparent: true, 
-                    opacity: 0.1, 
-                    side: THREE.DoubleSide, 
-                    depthWrite: false, 
-                    blending: THREE.AdditiveBlending 
-                });
+                coneGeo.translate(0, -15, 0); coneGeo.rotateX(Math.PI / 2);
+                const coneMat = new THREE.MeshBasicMaterial({ color: 0xffffdd, transparent: true, opacity: 0.1, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
                 this.lightCone = new THREE.Mesh(coneGeo, coneMat);
-                this.camera.add(this.lightCone);
-                this.lightCone.visible = false;
+                this.camera.add(this.lightCone); this.lightCone.visible = false;
 
                 this.battery = 100; this.isFlashlightOn = false;
                 this.batteryFill = document.getElementById('battery-fill');
@@ -619,6 +692,7 @@
 
                 this.raycaster = new THREE.Raycaster();
                 this.downVector = new THREE.Vector3(0, -1, 0);
+                this.stepTimer = 0;
 
                 document.addEventListener('keydown', e => this.onKeyDown(e));
                 document.addEventListener('keyup', e => this.onKeyUp(e));
@@ -626,17 +700,18 @@
 
             onKeyDown(e) {
                 if (isMobile) return;
-                if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyC', 'ShiftLeft', 'Space'].includes(e.code)) e.preventDefault();
-                if (this.state.isGameOver || this.state.isWin || this.state.isCinematic || this.state.isPaused || this.state.isMenuActive) return;
+                if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyC', 'ShiftLeft', 'Space', 'KeyQ'].includes(e.code)) e.preventDefault();
+                if (this.state.isGameOver || this.state.isWin || this.state.isCinematic || this.state.isPaused || this.state.isMenuActive || this.state.isJumpscareActive) return;
                 
                 switch (e.code) {
                     case 'KeyW': this.moveF = true; break;
                     case 'KeyS': this.moveB = true; break;
                     case 'KeyA': this.moveL = true; break;
                     case 'KeyD': this.moveR = true; break;
-                    case 'ShiftLeft': this.isSprinting = true; break;
+                    case 'ShiftLeft': if(!this.isExhausted) this.isSprinting = true; break;
                     case 'KeyC': this.isCrouching = true; this.baseY = 2.0; break; 
                     case 'KeyF': this.toggleFlashlight(); break;
+                    case 'KeyQ': this.throwRock(); break;
                     case 'Escape': if(!this.state.isCinematic) { document.getElementById('pause-menu').classList.remove('hidden'); this.state.isPaused = true; document.exitPointerLock(); } break;
                 }
             }
@@ -661,6 +736,24 @@
                 }
             }
 
+            throwRock() {
+                // Implementação visual e lógica da pedra
+                const rockGeo = new THREE.DodecahedronGeometry(0.5, 0);
+                const rockMat = new THREE.MeshStandardMaterial({ color: 0x555555 });
+                const rock = new THREE.Mesh(rockGeo, rockMat);
+                rock.position.copy(this.camera.position);
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+                rock.velocity = forward.multiplyScalar(40);
+                this.scene.add(rock);
+                
+                // Avisa a IA (variavel global de controle para o Game)
+                window.lastRockPos = rock.position.clone();
+                window.rockThrown = true;
+
+                // Simula queda
+                setTimeout(() => { this.scene.remove(rock); }, 3000);
+            }
+
             resetControls() {
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isSprinting = false; this.isCrouching = false;
@@ -669,11 +762,21 @@
 
             update(delta, time, narrative) {
                 if (!isMobile && !this.controls.isLocked) return;
-                if (this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
+                if (this.state.isGameOver || this.state.isPaused || this.state.isMenuActive || this.state.isJumpscareActive) return;
 
                 let speed = 40.0;
-                if (this.isSprinting && !this.isCrouching) speed = 80.0;
+                if (this.isSprinting && !this.isCrouching && this.stamina > 0) speed = 80.0;
                 if (this.isCrouching) speed = 20.0;
+
+                // Stamina
+                if (this.isSprinting && !this.isCrouching && this.isMoving) {
+                    this.stamina -= delta * 20;
+                    if (this.stamina <= 0) { this.stamina = 0; this.isSprinting = false; this.isExhausted = true; }
+                } else {
+                    this.stamina += delta * 10;
+                    if (this.stamina >= 100) { this.stamina = 100; this.isExhausted = false; }
+                }
+                this.staminaFill.style.width = `${Math.max(0, this.stamina)}%`;
 
                 const moveDistance = speed * delta;
                 
@@ -706,20 +809,22 @@
 
                 this.raycaster.set(new THREE.Vector3(this.camera.position.x, this.camera.position.y + 100, this.camera.position.z), this.downVector);
                 const intersects = this.raycaster.intersectObjects(this.env.walkableMeshes, true);
-                if (intersects.length > 0) {
-                    const groundY = intersects[0].point.y;
-                    this.camera.position.y = groundY + this.baseY;
-                }
+                if (intersects.length > 0) this.camera.position.y = intersects[0].point.y + this.baseY;
 
+                // Som de passos
                 if (this.isMoving) {
+                    this.stepTimer += delta;
+                    const interval = this.isSprinting ? 0.3 : 0.6;
+                    if (this.stepTimer > interval) {
+                        this.audio.playStep(this.isSprinting);
+                        this.stepTimer = 0;
+                    }
+                    
                     const bobSpeed = this.isSprinting ? 20 : 10;
                     this.bobTimer += delta * bobSpeed;
                     this.camera.position.y += Math.sin(this.bobTimer) * 0.1;
-                    this.bodyGroup.children[0].rotation.x = -0.5 + Math.sin(this.bobTimer) * 0.1;
-                    this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.1;
                 }
 
-                // Tremor da lanterna
                 if (this.isFlashlightOn && this.battery > 0) {
                     this.flashlight.target.position.x = Math.sin(time * 8) * 0.1;
                     this.flashlight.target.position.y = Math.cos(time * 6) * 0.1;
@@ -727,10 +832,7 @@
                     this.battery -= 1.0 * delta;
                     this.batteryFill.style.width = `${Math.max(0, this.battery)}%`;
                     if (this.battery < 20) this.batteryFill.style.backgroundColor = 'red';
-                    if (this.battery <= 0) { 
-                        this.battery = 0; this.isFlashlightOn = false; 
-                        this.flashlight.visible = false; this.lightCone.visible = false; 
-                    }
+                    if (this.battery <= 0) { this.battery = 0; this.isFlashlightOn = false; this.flashlight.visible = false; this.lightCone.visible = false; }
                 }
 
                 this.checkInteraction(narrative);
@@ -739,12 +841,13 @@
             checkInteraction(narrative) {
                 const prompt = document.getElementById('interaction-prompt');
                 let canInteract = false;
+                const dist = 10;
 
+                // Data Pads
                 for (let i = this.env.collectibles.length - 1; i >= 0; i--) {
                     const item = this.env.collectibles[i];
-                    if (this.camera.position.distanceTo(item.position) < 10) { 
-                        canInteract = true; prompt.classList.remove('hidden');
-                        prompt.innerText = isMobile ? "Toque em AÇÃO" : "[E] Examinar Dados";
+                    if (this.camera.position.distanceTo(item.position) < dist) { 
+                        canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Examinar Dados";
                         if (window.keys['KeyE'] || window.mobileInteract) {
                             narrative.showModal("LOG DE DADOS", item.userData.text);
                             this.env.scene.remove(item); this.env.collectibles.splice(i, 1);
@@ -753,16 +856,44 @@
                     }
                 }
 
+                // Caixas de Loot
+                for (let i = this.env.lootBoxes.length - 1; i >= 0; i--) {
+                    const box = this.env.lootBoxes[i];
+                    if (this.camera.position.distanceTo(box.position) < dist) { 
+                        canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Abrir Caixa";
+                        if (window.keys['KeyE'] || window.mobileInteract) {
+                            this.env.scene.remove(box); this.env.lootBoxes.splice(i, 1);
+                            this.audio.playPickup();
+                            if(Math.random() > 0.5) {
+                                this.battery = Math.min(100, this.battery + 30);
+                                this.batteryFill.style.width = `${this.battery}%`;
+                                narrative.triggerRadio("Bateria Recuperada. (+30%)");
+                            } else {
+                                this.state.flares++;
+                                document.getElementById('inventory-ui').innerHTML = `<span>🔦 Sinalizadores: ${this.state.flares}</span>`;
+                                narrative.triggerRadio("Sinalizador Encontrado.");
+                            }
+                            window.keys['KeyE'] = false; window.mobileInteract = false; break;
+                        }
+                    }
+                }
+
+                // Navio (Fim)
                 if (this.camera.position.distanceTo(this.env.shipPos) < 50) {
-                    canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = isMobile ? "Toque em AÇÃO" : "[E] Embarcar e Escapar";
+                    canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Embarcar e Escapar";
                     if (window.keys['KeyE'] || window.mobileInteract) {
                         if (this.state.datapads >= 5) {
                             this.state.isWin = true;
+                            document.getElementById('win-title').innerText = "EXTRAÇÃO BEM-SUCEDIDA";
+                            document.getElementById('win-desc').innerText = "Você entregou todos os dados para a Biosyn e foi pago generosamente.";
                             document.getElementById('win-screen').classList.remove('hidden');
-                            if(!isMobile) document.exitPointerLock();
                         } else {
-                            narrative.triggerRadio("Ainda faltam dados. Não posso sair sem eles.");
+                            this.state.isWin = true;
+                            document.getElementById('win-title').innerText = "FALHA NA MISSÃO";
+                            document.getElementById('win-desc').innerText = "Você fugiu, mas sem os dados. A Biosyn te eliminou por falha.";
+                            document.getElementById('win-screen').classList.remove('hidden');
                         }
+                        if(!isMobile) document.exitPointerLock();
                         window.keys['KeyE'] = false; window.mobileInteract = false;
                     }
                 }
@@ -771,15 +902,15 @@
         }
 
         // ==========================================
-        // IA DOS DINOSSAUROS
+        // IA DOS DINOSSAUROS (COM INVESTIGAÇÃO DE PEDRA)
         // ==========================================
         class BaseDino {
-            constructor(scene, player, state, url, scale, speed, vision, spawnPos) {
-                this.scene = scene; this.player = player; this.state = state;
+            constructor(scene, player, state, url, scale, speed, vision, spawnPos, audio) {
+                this.scene = scene; this.player = player; this.state = state; this.audio = audio;
                 this.group = new THREE.Group(); this.mixer = null;
                 this.speed = speed; this.patrolSpeed = 10; this.vision = vision;
                 this.direction = new THREE.Vector3(); this.targetNode = new THREE.Vector3();
-                this.aiState = 'PATROL'; this.roarTimer = 0; this.cameraShake = 0;
+                this.aiState = 'PATROL'; this.roarTimer = 0;
                 
                 this.group.position.copy(spawnPos);
                 this.pickNewTarget();
@@ -807,9 +938,16 @@
                 }
             }
 
-            update(delta, time, audio) {
-                if (this.player.state.isGameOver || !this.group.parent) return;
+            update(delta, time) {
+                if (this.player.state.isGameOver || this.player.state.isJumpscareActive || !this.group.parent) return;
                 if (this.mixer) this.mixer.update(delta);
+
+                // Verifica se uma pedra foi jogada
+                if (window.rockThrown && window.lastRockPos) {
+                    this.targetNode.copy(window.lastRockPos);
+                    this.aiState = 'INVESTIGATE';
+                    window.rockThrown = false;
+                }
 
                 const dist = this.group.position.distanceTo(this.player.camera.position);
                 const isHiding = this.player.isCrouching && !this.player.isFlashlightOn;
@@ -818,15 +956,23 @@
                 if (this.player.isSprinting) currentVision *= 1.5;
 
                 if (dist < currentVision) this.aiState = 'CHASE';
-                else if (dist > currentVision * 2) this.aiState = 'PATROL';
+                else if (this.aiState === 'CHASE' && dist > currentVision * 2) this.aiState = 'PATROL';
+                
+                // Se chegar perto da pedra, volta a patrulhar
+                if (this.aiState === 'INVESTIGATE' && this.group.position.distanceTo(this.targetNode) < 10) {
+                    this.aiState = 'PATROL';
+                    this.pickNewTarget();
+                }
 
                 if (this.aiState === 'CHASE' && dist < 40) {
                     document.getElementById('danger-alert').classList.remove('hidden');
+                    this.audio.startHeartbeat();
                     if (this.constructor.name === 'TRexAI' && this.roarTimer <= 0) {
-                        audio.playRoar(); this.roarTimer = 6; this.cameraShake = 3.0;
+                        this.audio.playRoar(); this.roarTimer = 6;
                     }
                 } else {
                     document.getElementById('danger-alert').classList.add('hidden');
+                    this.audio.stopHeartbeat();
                 }
                 if (this.roarTimer > 0) this.roarTimer -= delta;
 
@@ -834,29 +980,43 @@
                     this.direction.subVectors(this.player.camera.position, this.group.position).setY(0).normalize();
                     this.group.position.addScaledVector(this.direction, this.speed * delta);
                     if (dist < 10) {
-                        this.player.state.isGameOver = true;
-                        document.getElementById('game-over-screen').classList.remove('hidden');
-                        if(!isMobile) document.exitPointerLock();
+                        // JUMPSACRE
+                        this.player.state.isJumpscareActive = true;
+                        document.getElementById('jumpscare-overlay').style.opacity = '0.8';
+                        document.getElementById('jumpscare-overlay').style.transition = 'none';
+                        this.player.camera.position.y = Math.sin(this.group.position.x * 0.01) * Math.cos(this.group.position.z * 0.01) * 15 + 1; // Cai no chão
+                        
+                        // Faz o dino olhar para a câmera
+                        this.group.lookAt(this.player.camera.position);
+                        
+                        setTimeout(() => {
+                            document.getElementById('gameover-title').innerText = "VOCÊ FOI DEVORADO";
+                            document.getElementById('gameover-desc').innerText = "A cadeia alimentar foi restaurada.";
+                            document.getElementById('game-over-screen').classList.remove('hidden');
+                            document.getElementById('jumpscare-overlay').style.transition = 'opacity 1s';
+                            document.getElementById('jumpscare-overlay').style.opacity = '0';
+                            if(!isMobile) document.exitPointerLock();
+                        }, 1500);
                     }
                 } else {
                     this.direction.subVectors(this.targetNode, this.group.position).setY(0);
                     if (this.direction.length() < 20) this.pickNewTarget();
                     else {
                         this.direction.normalize();
-                        this.group.position.addScaledVector(this.direction, this.patrolSpeed * delta);
+                        const pSpeed = this.aiState === 'INVESTIGATE' ? this.speed * 0.5 : this.patrolSpeed;
+                        this.group.position.addScaledVector(this.direction, pSpeed * delta);
                     }
                 }
 
                 if (this.direction.length() > 0) {
                     this.group.rotation.y = Math.atan2(this.direction.x, this.direction.z);
                 }
-                
                 this.group.position.y = Math.sin(this.group.position.x * 0.01) * Math.cos(this.group.position.z * 0.01) * 15;
             }
         }
         
-        class RaptorAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './archie_the_velociraptor.glb', 3.0, 30, 60, new THREE.Vector3(-600, 0, 0)); } }
-        class TRexAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './t_rex.glb', 6.0, 25, 100, new THREE.Vector3(0, 0, -700)); } }
+        class RaptorAI extends BaseDino { constructor(s,p,st,a) { super(s,p,st, './archie_the_velociraptor.glb', 3.0, 30, 60, new THREE.Vector3(-600, 0, 0), a); } }
+        class TRexAI extends BaseDino { constructor(s,p,st,a) { super(s,p,st, './t_rex.glb', 6.0, 25, 100, new THREE.Vector3(0, 0, -700), a); } }
 
         // ==========================================
         // NARRATIVA
@@ -893,11 +1053,22 @@
         }
 
         // ==========================================
-        // LOOP PRINCIPAL
+        // LOOP PRINCIPAL E CHUVA NA LENTE
         // ==========================================
         window.keys = {};
         document.addEventListener('keydown', e => window.keys[e.code] = true);
         document.addEventListener('keyup', e => window.keys[e.code] = false);
+
+        // Gera os drops de chuva na tela
+        const lensRainContainer = document.getElementById('lens-rain');
+        for(let i=0; i<20; i++) {
+            const drop = document.createElement('div');
+            drop.classList.add('lens-drop');
+            drop.style.left = `${Math.random() * 100}vw`;
+            drop.style.animationDuration = `${0.5 + Math.random() * 0.5}s`;
+            drop.style.animationDelay = `${Math.random()}s`;
+            lensRainContainer.appendChild(drop);
+        }
 
         class Game {
             constructor() {
@@ -917,7 +1088,6 @@
                 
                 this.narrative = new NarrativeManager(this.state);
                 this.environment = new Environment(this.scene, this.state, this.narrative);
-                this.player = new Player(this.camera, this.scene, this.environment, this.state);
                 this.raptor = null; this.trex = null;
                 
                 this.menuAngle = 0;
@@ -933,87 +1103,64 @@
 
                 const zone = document.getElementById('joystick-zone');
                 const knob = document.getElementById('joystick-knob');
-                let joyActive = false;
-                let joyStart = { x: 0, y: 0 };
+                let joyActive = false; let joyStart = { x: 0, y: 0 };
 
                 zone.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    joyActive = true;
+                    e.preventDefault(); joyActive = true;
                     const rect = zone.getBoundingClientRect();
-                    joyStart.x = rect.left + rect.width / 2;
-                    joyStart.y = rect.top + rect.height / 2;
+                    joyStart.x = rect.left + rect.width / 2; joyStart.y = rect.top + rect.height / 2;
                 });
 
                 zone.addEventListener('touchmove', (e) => {
-                    if (!joyActive) return;
-                    e.preventDefault();
+                    if (!joyActive) return; e.preventDefault();
                     const touch = e.touches[0];
-                    let dx = touch.clientX - joyStart.x;
-                    let dy = touch.clientY - joyStart.y;
-                    
-                    const maxDist = 40;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    let dx = touch.clientX - joyStart.x; let dy = touch.clientY - joyStart.y;
+                    const maxDist = 40; const dist = Math.sqrt(dx*dx + dy*dy);
                     if (dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
-                    
                     knob.style.transform = `translate(${dx}px, ${dy}px)`;
 
-                    this.player.moveF = dy < -15;
-                    this.player.moveB = dy > 15;
-                    this.player.moveL = dx < -15;
-                    this.player.moveR = dx > 15;
+                    this.player.moveF = dy < -15; this.player.moveB = dy > 15;
+                    this.player.moveL = dx < -15; this.player.moveR = dx > 15;
                 });
 
                 zone.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    joyActive = false;
+                    e.preventDefault(); joyActive = false;
                     knob.style.transform = `translate(0px, 0px)`;
                     this.player.moveF = false; this.player.moveB = false; this.player.moveL = false; this.player.moveR = false;
                 });
 
-                let lookActive = false;
-                let lookStart = { x: 0, y: 0 };
+                let lookActive = false; let lookStart = { x: 0, y: 0 };
                 const lookZone = document.getElementById('game-container');
 
                 lookZone.addEventListener('touchstart', (e) => {
                     if (e.target.closest('#joystick-zone') || e.target.closest('#action-buttons')) return;
-                    lookActive = true;
-                    lookStart.x = e.touches[0].clientX;
-                    lookStart.y = e.touches[0].clientY;
+                    lookActive = true; lookStart.x = e.touches[0].clientX; lookStart.y = e.touches[0].clientY;
                 });
 
                 lookZone.addEventListener('touchmove', (e) => {
-                    if (!lookActive) return;
-                    e.preventDefault();
+                    if (!lookActive) return; e.preventDefault();
                     const touch = e.touches[0];
-                    const deltaX = touch.clientX - lookStart.x;
-                    const deltaY = touch.clientY - lookStart.y;
-
+                    const deltaX = touch.clientX - lookStart.x; const deltaY = touch.clientY - lookStart.y;
                     const sensitivity = 0.005;
-                    this.camera.rotation.y -= deltaX * sensitivity;
-                    this.camera.rotation.x -= deltaY * sensitivity;
+                    this.camera.rotation.y -= deltaX * sensitivity; this.camera.rotation.x -= deltaY * sensitivity;
                     this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
-
-                    lookStart.x = touch.clientX;
-                    lookStart.y = touch.clientY;
+                    lookStart.x = touch.clientX; lookStart.y = touch.clientY;
                 });
 
                 lookZone.addEventListener('touchend', () => { lookActive = false; });
 
-                document.getElementById('btn-mob-sprint').addEventListener('touchstart', (e) => { e.preventDefault(); this.player.isSprinting = true; });
+                document.getElementById('btn-mob-sprint').addEventListener('touchstart', (e) => { e.preventDefault(); if(!this.player.isExhausted) this.player.isSprinting = true; });
                 document.getElementById('btn-mob-sprint').addEventListener('touchend', (e) => { e.preventDefault(); this.player.isSprinting = false; });
                 
                 document.getElementById('btn-mob-crouch').addEventListener('touchstart', (e) => { 
-                    e.preventDefault(); 
-                    this.player.isCrouching = !this.player.isCrouching; 
+                    e.preventDefault(); this.player.isCrouching = !this.player.isCrouching; 
                     this.player.baseY = this.player.isCrouching ? 2.0 : 4.0;
                 });
 
                 document.getElementById('btn-mob-flash').addEventListener('touchstart', (e) => { e.preventDefault(); this.player.toggleFlashlight(); });
-
+                document.getElementById('btn-mob-rock').addEventListener('touchstart', (e) => { e.preventDefault(); this.player.throwRock(); });
                 document.getElementById('btn-mob-interact').addEventListener('touchstart', (e) => { 
-                    e.preventDefault(); 
-                    window.mobileInteract = true; 
-                    setTimeout(() => window.mobileInteract = false, 200);
+                    e.preventDefault(); window.mobileInteract = true; setTimeout(() => window.mobileInteract = false, 200);
                 });
             }
 
@@ -1026,7 +1173,7 @@
                 });
                 if (!isMobile) {
                     document.getElementById('game-container').addEventListener('click', () => {
-                        if (!this.state.isMenuActive && !this.state.isPaused && !this.player.controls.isLocked) this.player.controls.lock();
+                        if (!this.state.isMenuActive && !this.state.isPaused && !this.state.isJumpscareActive && !this.player.controls.isLocked) this.player.controls.lock();
                     });
                 }
             }
@@ -1035,9 +1182,8 @@
                 this.state.isPaused = true;
                 document.getElementById('pause-menu').classList.remove('hidden');
                 if(!isMobile) document.exitPointerLock();
-                this.clock.getDelta(); 
-                window.keys = {};
-                this.player.resetControls();
+                this.clock.getDelta(); window.keys = {};
+                if(this.player) this.player.resetControls();
             }
 
             initUI() {
@@ -1058,8 +1204,7 @@
                 document.getElementById('btn-resume').onclick = () => { 
                     document.getElementById('pause-menu').classList.add('hidden'); 
                     this.state.isPaused = false; 
-                    this.clock.getDelta(); 
-                    if(!isMobile) this.player.controls.lock(); 
+                    this.clock.getDelta(); if(!isMobile) this.player.controls.lock(); 
                 };
                 document.getElementById('btn-exit').onclick = () => location.reload();
 
@@ -1072,6 +1217,9 @@
 
             startGame() {
                 if (!this.state.isMenuActive) return;
+                if (!this.audio) this.audio = new AudioManager();
+                this.player = new Player(this.camera, this.scene, this.environment, this.state, this.audio);
+                
                 const menu = document.getElementById('main-menu');
                 menu.style.opacity = '0';
                 
@@ -1115,23 +1263,16 @@
                     return;
                 }
 
-                if (!this.state.isGameOver && !this.state.isWin) {
-                    this.player.update(delta, time, this.narrative);
+                if (!this.state.isGameOver && !this.state.isWin && !this.state.isJumpscareActive) {
+                    if(this.player) this.player.update(delta, time, this.narrative);
                     this.environment.updateLighting();
-                    this.environment.update(delta, time, this.camera.position);
+                    this.environment.update(delta, time, this.camera.position, this.audio);
 
-                    if (this.state.act >= 2 && !this.raptor) this.raptor = new RaptorAI(this.scene, this.player, this.state);
-                    if (this.state.act === 3 && !this.trex) this.trex = new TRexAI(this.scene, this.player, this.state);
+                    if (this.state.act >= 2 && !this.raptor) this.raptor = new RaptorAI(this.scene, this.player, this.state, this.audio);
+                    if (this.state.act === 3 && !this.trex) this.trex = new TRexAI(this.scene, this.player, this.state, this.audio);
 
-                    if (this.raptor) this.raptor.update(delta, time, this.audio);
-                    if (this.trex) {
-                        this.trex.update(delta, time, this.audio);
-                        if (this.trex.cameraShake > 0) {
-                            this.camera.position.x += (Math.random()-0.5) * this.trex.cameraShake;
-                            this.camera.position.y += (Math.random()-0.5) * this.trex.cameraShake;
-                            this.trex.cameraShake -= delta * 2;
-                        }
-                    }
+                    if (this.raptor) this.raptor.update(delta, time);
+                    if (this.trex) this.trex.update(delta, time);
 
                     const enemies = [this.raptor, this.trex].filter(e => e !== null);
                     this.minimap.draw(this.camera.position, this.camera.rotation.y, enemies, this.environment.collectibles, this.environment.shipPos);
