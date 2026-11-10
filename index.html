@@ -2,17 +2,20 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurassic Park: Biosyn Protocol - Storm Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jurassic Park: Biosyn Protocol - Apocalyptic Storm</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Oswald', sans-serif; color: #fff; user-select: none; }
-        #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; cursor: crosshair; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Oswald', sans-serif; color: #fff; user-select: none; touch-action: none; }
+        #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         .hidden { display: none !important; }
 
-        #psx-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%), linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%); background-size: 100% 100%, 100% 3px; }
+        /* Overlay CRT/PSX */
+        #psx-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; background: radial-gradient(circle, rgba(0,0,0,0) 30%, rgba(0,0,10,0.95) 100%), linear-gradient(rgba(0, 10, 20, 0.2) 50%, rgba(0, 0, 0, 0.4) 50%); background-size: 100% 100%, 100% 3px; }
+        #lightning-flash { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: #e0f0ff; opacity: 0; pointer-events: none; z-index: 15; }
 
+        /* MENU */
         .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: flex; background-color: transparent; transition: opacity 0.5s ease; }
         .menu-left { width: 45%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw; clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%); }
         .menu-right { width: 55%; height: 100%; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 40px; background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 100%); }
@@ -26,8 +29,17 @@
         .menu-list li::before { content: ">"; position: absolute; left: -25px; opacity: 0; color: #ffcc00; transition: opacity 0.2s; }
         .menu-list li:hover::before { opacity: 1; }
 
+        /* SUB MENUS */
+        .sub-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 60; }
+        .sub-menu h2 { font-size: 40px; color: #ffcc00; margin-bottom: 30px; font-family: 'Cinzel', serif; }
+        .sub-menu label { font-size: 24px; margin: 15px 0; display: flex; justify-content: space-between; width: 350px; align-items: center; }
+        .sub-menu input[type="range"] { width: 150px; }
+        .sub-menu button { margin-top: 30px; padding: 10px 30px; background: transparent; border: 2px solid #ffcc00; color: #ffcc00; font-size: 20px; cursor: pointer; }
+        .sub-menu button:hover { background: #ffcc00; color: #000; }
+
+        /* HUD E MINI-MAPA */
         #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; font-family: 'VT323', monospace; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
-        #minimap { position: absolute; top: 20px; left: 20px; border: 2px solid #00ff00; background: rgba(0, 20, 0, 0.8); border-radius: 50%; box-shadow: 0 0 10px rgba(0,255,0,0.5); }
+        #minimap { position: absolute; top: 20px; left: 20px; border: 2px solid #00ff00; background: rgba(0, 20, 0, 0.9); border-radius: 50%; box-shadow: 0 0 15px rgba(0,255,0,0.6); }
         
         #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: rgba(255,255,255,0.4); }
         #interaction-prompt { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00; font-size: 20px; }
@@ -42,8 +54,19 @@
         #danger-alert { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #ff0000; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px red; animation: flash 0.5s infinite alternate; }
         @keyframes flash { from { opacity: 0.3; } to { opacity: 1; } }
 
+        /* CONTROLES MOBILE */
+        #mobile-controls { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 8; display: none; }
+        #joystick-zone { position: absolute; bottom: 30px; left: 30px; width: 150px; height: 150px; pointer-events: auto; }
+        #joystick-base { width: 100%; height: 100%; border-radius: 50%; background: rgba(0, 255, 0, 0.1); border: 2px solid rgba(0, 255, 0, 0.4); position: relative; }
+        #joystick-knob { width: 60px; height: 60px; border-radius: 50%; background: rgba(0, 255, 0, 0.5); position: absolute; top: 45px; left: 45px; box-shadow: 0 0 10px #00ff00; }
+        
+        #action-buttons { position: absolute; bottom: 30px; right: 30px; display: flex; flex-wrap: wrap; width: 180px; gap: 10px; pointer-events: auto; justify-content: flex-end; }
+        .mob-btn { width: 60px; height: 60px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid #00ff00; color: #00ff00; font-family: 'VT323'; font-size: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .mob-btn:active { background: #00ff00; color: #000; }
+
+        /* PAUSE E MODAIS */
         #pause-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 40; }
-        #pause-menu button { margin: 10px; padding: 10px 40px; font-size: 24px; background: transparent; border: 2px solid #fff; color: #fff; cursor: pointer; font-family: 'Oswald'; }
+        #pause-menu button { margin: 10px; padding: 10px 40px; font-size: 24px; background: transparent; border: 2px solid #fff; color: #fff; cursor: pointer; font-family: 'Oswald'; width: 300px; }
         #pause-menu button:hover { background: #fff; color: #000; }
         #ui-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 2px solid #00ff00; padding: 30px; width: 400px; pointer-events: auto; text-align: center; z-index: 45; font-family: 'VT323', monospace; }
         #ui-modal button { background: #00ff00; color: #000; border: none; padding: 10px 20px; font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px; }
@@ -61,6 +84,7 @@
     </style>
 </head>
 <body>
+    <div id="lightning-flash"></div>
     <div id="psx-overlay"></div>
     <div id="game-container"></div>
 
@@ -68,6 +92,7 @@
     <div id="letterbox-bottom" class="letterbox"></div>
     <div id="subtitle" class="hidden"></div>
 
+    <!-- MENU PRINCIPAL -->
     <div id="main-menu" class="ui-layer">
         <div class="menu-left">
             <div class="logo-container">
@@ -76,15 +101,11 @@
             </div>
             <ul class="menu-list" id="menu-list">
                 <li id="btn-start">INICIAR EPISÓDIO</li>
+                <li id="btn-settings">CONFIGURAÇÕES</li>
                 <li id="btn-quit">SAIR</li>
             </ul>
-            <p style="margin-top: 30px; color: #00ff00; font-size: 16px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
-                CONTROLES:<br>
-                WASD: Mover<br>
-                Shift: Correr<br>
-                C: Agachar (Furtivo)<br>
-                F: Lanterna<br>
-                E: Interagir
+            <p style="margin-top: 30px; color: #00ff00; font-size: 16px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;" id="controls-text">
+                <!-- Preenchido via JS -->
             </p>
         </div>
         <div class="menu-right">
@@ -92,6 +113,15 @@
         </div>
     </div>
 
+    <!-- CONFIGURAÇÕES -->
+    <div id="settings-menu" class="sub-menu hidden">
+        <h2>CONFIGURAÇÕES</h2>
+        <label>Intensidade da Chuva: <input type="range" id="rain-slider" min="0" max="2" step="1" value="1"></label>
+        <label>Frequência de Raios: <input type="range" id="lightning-slider" min="0" max="2" step="1" value="1"></label>
+        <button id="btn-close-settings">VOLTAR</button>
+    </div>
+
+    <!-- HUD -->
     <div id="hud" class="hidden">
         <canvas id="minimap" width="200" height="200"></canvas>
         <div id="crosshair">+</div>
@@ -115,10 +145,24 @@
         </div>
     </div>
 
+    <!-- CONTROLES MOBILE -->
+    <div id="mobile-controls">
+        <div id="joystick-zone">
+            <div id="joystick-base"><div id="joystick-knob"></div></div>
+        </div>
+        <div id="action-buttons">
+            <button class="mob-btn" id="btn-mob-sprint">CORRER</button>
+            <button class="mob-btn" id="btn-mob-crouch">AGACHAR</button>
+            <button class="mob-btn" id="btn-mob-flash">LUZ</button>
+            <button class="mob-btn" id="btn-mob-interact" style="border-color: #ffff00; color: #ffff00;">AÇÃO</button>
+        </div>
+    </div>
+
+    <!-- PAUSE -->
     <div id="pause-menu" class="hidden">
         <h1 style="font-family: 'Cinzel'; color: #ffcc00; margin-bottom: 20px;">PAUSADO</h1>
-        <p style="color: #aaa; margin-bottom: 20px;">O jogo pausou porque você saiu da janela.</p>
         <button id="btn-resume">CONTINUAR</button>
+        <button id="btn-pause-settings">CONFIGURAÇÕES</button>
         <button id="btn-exit">SAIR PARA O MENU</button>
     </div>
 
@@ -154,6 +198,21 @@
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+        // ==========================================
+        // VARIÁVEIS GLOBAIS E MOBILE
+        // ==========================================
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        let weatherSettings = {
+            rain: 1, // 0=Off, 1=Normal, 2=Torrential
+            lightning: 1 // 0=Off, 1=Normal, 2=Apocalyptic
+        };
+
+        if (isMobile) {
+            document.getElementById('controls-text').innerHTML = "CONTROLES MOBILE:<br>Joystick: Mover<br>Arrastar na tela: Olhar<br>Botões na tela para ações.";
+            document.getElementById('btn-mob-flash').innerText = "F";
+        }
+
         class GameState {
             constructor() {
                 this.datapads = 0; this.isGameOver = false; this.isWin = false;
@@ -163,7 +222,7 @@
         }
 
         // ==========================================
-        // MINI-MAPA (RADAR REAL)
+        // MINI-MAPA
         // ==========================================
         class Minimap {
             constructor(canvasId) {
@@ -173,79 +232,64 @@
 
             draw(playerPos, playerRotationY, entities, items, shipPos) {
                 this.ctx.clearRect(0, 0, 200, 200);
-                
-                // Fundo
-                this.ctx.fillStyle = 'rgba(0, 30, 0, 0.7)'; 
+                this.ctx.fillStyle = 'rgba(0, 20, 0, 0.9)'; 
                 this.ctx.beginPath(); this.ctx.arc(100, 100, 95, 0, Math.PI * 2); this.ctx.fill();
-                
-                // Grade
-                this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)'; 
+                this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.3)'; 
                 this.ctx.beginPath(); this.ctx.moveTo(100, 0); this.ctx.lineTo(100, 200); 
                 this.ctx.moveTo(0, 100); this.ctx.lineTo(200, 100); this.ctx.stroke();
 
                 this.ctx.save();
                 this.ctx.translate(100, 100);
-                this.ctx.rotate(playerRotationY); // Rotaciona o mapa para acompanhar a visão do jogador
+                this.ctx.rotate(playerRotationY);
 
-                const mapScale = 0.08; // Escala do radar
+                const mapScale = 0.08;
                 
-                // Desenha os pontos relativos ao jogador
-                this.drawPoint(shipPos, playerPos, 'blue', 6, mapScale);
-                items.forEach(item => this.drawPoint(item.position, playerPos, 'lime', 3, mapScale));
+                this.drawPoint(shipPos, playerPos, '#00aaff', 6, mapScale);
+                items.forEach(item => this.drawPoint(item.position, playerPos, '#00ff00', 3, mapScale));
                 entities.forEach(ent => {
                     if(ent.group && ent.group.parent) {
-                        this.drawPoint(ent.group.position, playerPos, 'red', ent.constructor.name === 'TRexAI' ? 6 : 4, mapScale);
+                        this.drawPoint(ent.group.position, playerPos, '#ff0000', ent.constructor.name === 'TRexAI' ? 7 : 4, mapScale);
                     }
                 });
 
                 this.ctx.restore();
 
-                // Jogador (Seta fixa no centro apontando para cima)
                 this.ctx.fillStyle = '#fff';
                 this.ctx.beginPath(); 
-                this.ctx.moveTo(100, 90); 
-                this.ctx.lineTo(105, 105); 
-                this.ctx.lineTo(95, 105); 
-                this.ctx.closePath(); 
-                this.ctx.fill();
+                this.ctx.moveTo(100, 88); this.ctx.lineTo(106, 105); this.ctx.lineTo(94, 105); 
+                this.ctx.closePath(); this.ctx.fill();
             }
 
             drawPoint(pos, playerPos, color, size, scale) {
                 let dx = (pos.x - playerPos.x) * scale;
                 let dz = (pos.z - playerPos.z) * scale;
-
-                // Limita os pontos à borda do radar
                 let dist = Math.sqrt(dx*dx + dz*dz);
-                if (dist > 90) {
-                    dx = (dx/dist) * 90;
-                    dz = (dz/dist) * 90;
-                }
-
+                if (dist > 90) { dx = (dx/dist) * 90; dz = (dz/dist) * 90; }
                 this.ctx.fillStyle = color; 
                 this.ctx.beginPath(); this.ctx.arc(dx, dz, size, 0, Math.PI * 2); this.ctx.fill();
             }
         }
 
         // ==========================================
-        // AMBIENTE
+        // AMBIENTE (ESCURO E CHUVOSO)
         // ==========================================
         class Environment {
             constructor(scene, state, narrative) {
                 this.scene = scene; this.state = state; this.narrative = narrative;
                 this.collidables = []; this.collectibles = []; this.walkableMeshes = [];
                 
-                this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
+                // ILUMINAÇÃO QUASE ZERO (Dependência total da lanterna)
+                this.sunLight = new THREE.DirectionalLight(0x112233, 0.05); 
                 this.sunLight.castShadow = true;
-                this.sunLight.shadow.mapSize.width = 2048; this.sunLight.shadow.mapSize.height = 2048;
-                this.sunLight.shadow.camera.left = -1000; this.sunLight.shadow.camera.right = 1000;
-                this.sunLight.shadow.camera.top = 1000; this.sunLight.shadow.camera.bottom = -1000;
+                this.sunLight.shadow.mapSize.width = 1024; this.sunLight.shadow.mapSize.height = 1024;
                 this.scene.add(this.sunLight);
                 
-                this.hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x444444, 1);
+                this.hemiLight = new THREE.HemisphereLight(0x112233, 0x000000, 0.05);
                 this.scene.add(this.hemiLight);
 
-                // Neblina Pesada
-                this.scene.fog = new THREE.FogExp2(0x87CEEB, 0.015); 
+                // NÉVOA MENOS DENSA PARA A LANTERNA PODER ATRAVESSAR
+                this.scene.fog = new THREE.FogExp2(0x0a1128, 0.015); 
+                this.scene.background = new THREE.Color(0x0a1128);
 
                 this.buildTerrain();
                 this.buildJungle(); 
@@ -255,7 +299,7 @@
                 this.buildZone4_Lagoon();
                 this.buildMonorail();
                 this.buildItems();
-                this.buildRain();
+                this.buildHeavyRain();
             }
 
             addCollider(mesh) {
@@ -273,7 +317,7 @@
                     pos.setZ(i, z);
                 }
                 geo.computeVertexNormals();
-                const mat = new THREE.MeshStandardMaterial({ color: 0x2a3d1c, roughness: 1, flatShading: true });
+                const mat = new THREE.MeshStandardMaterial({ color: 0x1a2a1a, roughness: 1, flatShading: true }); // Grama escura
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.rotation.x = -Math.PI / 2; mesh.receiveShadow = true;
                 this.scene.add(mesh);
@@ -282,9 +326,9 @@
 
             buildJungle() {
                 const treeTrunkGeo = new THREE.CylinderGeometry(1, 2, 20, 5);
-                const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, flatShading: true });
+                const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x2a1505, flatShading: true });
                 const treeLeavesGeo = new THREE.ConeGeometry(10, 25, 5);
-                const treeLeavesMat = new THREE.MeshStandardMaterial({ color: 0x1a3a10, flatShading: true });
+                const treeLeavesMat = new THREE.MeshStandardMaterial({ color: 0x0a1a0a, flatShading: true });
 
                 treeLeavesMat.onBeforeCompile = (shader) => {
                     shader.uniforms.time = { value: 0 };
@@ -294,9 +338,9 @@
                     `.replace(
                         `#include <begin_vertex>`,
                         `#include <begin_vertex>
-                        float angle = sin(time * 2.0 + position.x + position.z) * 0.1;
-                        transformed.x += sin(angle) * position.y * 0.2;
-                        transformed.z += cos(angle) * position.y * 0.2;
+                        float angle = sin(time * 4.0 + position.x + position.z) * 0.3;
+                        transformed.x += sin(angle) * position.y * 0.4;
+                        transformed.z += cos(angle) * position.y * 0.4;
                         `
                     );
                     treeLeavesMat.userData.shader = shader;
@@ -331,7 +375,6 @@
                     dummy.updateMatrix();
                     leaves.setMatrixAt(spawned, dummy.matrix);
                     
-                    // Colisão da Árvore
                     this.collidables.push(new THREE.Box3(
                         new THREE.Vector3(x - 2*scale, y - 10, z - 2*scale),
                         new THREE.Vector3(x + 2*scale, y + 20*scale, z + 2*scale)
@@ -342,30 +385,54 @@
                 this.scene.add(trunks); this.scene.add(leaves);
             }
 
-            buildRain() {
-                this.rainCount = 8000;
-                const rainGeo = new THREE.BufferGeometry();
-                const rainPos = new Float32Array(this.rainCount * 3);
-                for(let i=0; i<this.rainCount*3; i+=3) {
-                    rainPos[i] = (Math.random() - 0.5) * 200; // Nuvem local ao redor do jogador
-                    rainPos[i+1] = Math.random() * 100;
-                    rainPos[i+2] = (Math.random() - 0.5) * 200;
+            buildHeavyRain() {
+                this.maxRainCount = 25000;
+                this.rainGeo = new THREE.BufferGeometry();
+                this.rainPositions = new Float32Array(this.maxRainCount * 6);
+
+                for (let i = 0; i < this.maxRainCount; i++) {
+                    const x = (Math.random() - 0.5) * 400;
+                    const y = Math.random() * 200;
+                    const z = (Math.random() - 0.5) * 400;
+                    
+                    this.rainPositions[i * 6] = x;
+                    this.rainPositions[i * 6 + 1] = y;
+                    this.rainPositions[i * 6 + 2] = z;
+                    
+                    this.rainPositions[i * 6 + 3] = x;
+                    this.rainPositions[i * 6 + 4] = y - 3;
+                    this.rainPositions[i * 6 + 5] = z;
                 }
-                rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
-                const rainMat = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.8, transparent: true, opacity: 0.6 });
-                this.rain = new THREE.Points(rainGeo, rainMat);
-                this.rain.visible = true; // SEMPRE VISÍVEL
+
+                this.rainGeo.setAttribute('position', new THREE.BufferAttribute(this.rainPositions, 3));
+                this.rainMat = new THREE.LineBasicMaterial({ color: 0xaaccff, transparent: true, opacity: 0.6 });
+                this.rain = new THREE.LineSegments(this.rainGeo, this.rainMat);
+                
+                this.updateWeatherSettings();
                 this.scene.add(this.rain);
             }
 
+            updateWeatherSettings() {
+                if (weatherSettings.rain === 0) this.rain.visible = false;
+                else if (weatherSettings.rain === 1) {
+                    this.rain.visible = true;
+                    this.rainGeo.setDrawRange(0, 5000 * 2);
+                    this.rainMat.opacity = 0.5;
+                } else {
+                    this.rain.visible = true;
+                    this.rainGeo.setDrawRange(0, this.maxRainCount * 2);
+                    this.rainMat.opacity = 0.8;
+                }
+            }
+
             buildZone1_Volcano() {
-                const volcano = new THREE.Mesh(new THREE.ConeGeometry(200, 300, 16), new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true }));
+                const volcano = new THREE.Mesh(new THREE.ConeGeometry(200, 300, 16), new THREE.MeshStandardMaterial({ color: 0x222222, flatShading: true }));
                 volcano.position.set(0, 0, -800); this.scene.add(volcano);
                 this.walkableMeshes.push(volcano); this.addCollider(volcano);
             }
 
             buildZone2_Canyons() {
-                const wallMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true });
+                const wallMat = new THREE.MeshStandardMaterial({ color: 0x3a2a25, flatShading: true });
                 for (let i = 0; i < 5; i++) {
                     const wall = new THREE.Mesh(new THREE.BoxGeometry(50, 150, 300), wallMat);
                     wall.position.set(-700 + (i * 100), 50, 0); wall.castShadow = true;
@@ -375,31 +442,29 @@
 
             buildZone3_VisitorCenter() {
                 const center = new THREE.Group();
-                const mainBuild = new THREE.Mesh(new THREE.CylinderGeometry(50, 50, 30, 12), new THREE.MeshStandardMaterial({ color: 0xccbbaa }));
+                const mainBuild = new THREE.Mesh(new THREE.CylinderGeometry(50, 50, 30, 12), new THREE.MeshStandardMaterial({ color: 0x555555 }));
                 mainBuild.position.y = 15; center.add(mainBuild);
-                const roof = new THREE.Mesh(new THREE.ConeGeometry(60, 30, 12), new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true }));
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(60, 30, 12), new THREE.MeshStandardMaterial({ color: 0x332211, flatShading: true }));
                 roof.position.y = 45; center.add(roof);
                 center.position.set(0, 0, 0); this.scene.add(center);
                 this.addCollider(mainBuild); 
             }
 
             buildZone4_Lagoon() {
-                const water = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0x0a1128 }));
+                const water = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0x001122 }));
                 water.rotation.x = -Math.PI / 2; water.position.set(700, -5, 700); this.scene.add(water);
 
-                const ship = new THREE.Mesh(new THREE.BoxGeometry(80, 60, 200), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+                const ship = new THREE.Mesh(new THREE.BoxGeometry(80, 60, 200), new THREE.MeshStandardMaterial({ color: 0x111111 }));
                 ship.position.set(700, 25, 1000); this.scene.add(ship);
                 this.shipPos = ship.position.clone(); this.addCollider(ship);
             }
 
             buildMonorail() {
-                const pillarMat = new THREE.MeshStandardMaterial({ color: 0x999999 });
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0x444444 });
                 for (let z = -900; z <= 900; z += 100) {
                     const pillar = new THREE.Mesh(new THREE.BoxGeometry(10, 60, 10), pillarMat);
                     pillar.position.set(300, 30, z); this.scene.add(pillar); this.addCollider(pillar);
                 }
-                const track = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 1900), new THREE.MeshStandardMaterial({ color: 0xdddddd }));
-                track.position.set(300, 60, 0); this.scene.add(track);
             }
 
             buildItems() {
@@ -433,59 +498,78 @@
             }
 
             updateLighting() {
-                if (this.state.act === 1) {
-                    this.scene.background = new THREE.Color(0x87CEEB); this.scene.fog.color.setHex(0x87CEEB); this.scene.fog.density = 0.015;
-                    this.sunLight.color.setHex(0xffffee); this.sunLight.intensity = 1.5;
-                } else if (this.state.act === 2) {
-                    this.scene.background = new THREE.Color(0xff8c00); this.scene.fog.color.setHex(0xff8c00); this.scene.fog.density = 0.02;
-                    this.sunLight.color.setHex(0xffaa00); this.sunLight.intensity = 1;
-                } else {
-                    this.scene.background = new THREE.Color(0x050510); this.scene.fog.color.setHex(0x050510); this.scene.fog.density = 0.03;
-                    this.sunLight.color.setHex(0x334466); this.sunLight.intensity = 0.2;
-                }
+                // Ambiente apocalíptico constante
+                this.scene.background = new THREE.Color(0x0a1128);
+                this.scene.fog.color.setHex(0x0a1128);
+                this.scene.fog.density = 0.015;
+                this.sunLight.intensity = 0.05;
             }
 
             update(delta, time, playerPos) {
-                // Atualiza Animação do Vento
                 this.scene.traverse((child) => {
                     if (child.material && child.material.userData.shader) {
                         child.material.userData.shader.uniforms.time.value = time;
                     }
                 });
 
-                // A Nuvem de chuva segue o jogador
+                if (!this.rain.visible) return;
                 this.rain.position.copy(playerPos);
 
-                // Física da Chuva caindo
                 const positions = this.rain.geometry.attributes.position.array;
-                for(let i=1; i<this.rainCount*3; i+=3) {
-                    positions[i] -= 100 * delta; // Velocidade
-                    if(positions[i] < -50) {
-                        positions[i] = 100; // Reseta no topo
-                        positions[i-1] = (Math.random() - 0.5) * 200;
-                        positions[i+1] = (Math.random() - 0.5) * 200;
+                const countToRender = weatherSettings.rain === 1 ? 5000 : this.maxRainCount;
+
+                for(let i=0; i < countToRender * 6; i += 6) {
+                    positions[i+1] -= 150 * delta; 
+                    positions[i+4] -= 150 * delta; 
+                    positions[i] -= 20 * delta;
+                    positions[i+3] -= 20 * delta;
+
+                    if(positions[i+1] < -20) {
+                        const newX = (Math.random() - 0.5) * 400;
+                        const newY = 200 + Math.random() * 50;
+                        const newZ = (Math.random() - 0.5) * 400;
+                        
+                        positions[i] = newX; positions[i+1] = newY; positions[i+2] = newZ;
+                        positions[i+3] = newX; positions[i+4] = newY - 3; positions[i+5] = newZ;
                     }
                 }
                 this.rain.geometry.attributes.position.needsUpdate = true;
 
-                // Relâmpagos
-                if (Math.random() < 0.005) {
-                    this.sunLight.intensity = 10;
-                    this.scene.background = new THREE.Color(0xffffff);
+                let lightningChance = 0;
+                if (weatherSettings.lightning === 1) lightningChance = 0.005;
+                if (weatherSettings.lightning === 2) lightningChance = 0.015;
+
+                if (Math.random() < lightningChance) {
+                    const flashEl = document.getElementById('lightning-flash');
+                    flashEl.style.transition = 'none';
+                    flashEl.style.opacity = '1';
+                    this.sunLight.intensity = 2; // Flash
+                    
                     setTimeout(() => {
+                        flashEl.style.transition = 'opacity 0.5s';
+                        flashEl.style.opacity = '0';
                         this.updateLighting();
+                        
+                        const cam = this.scene.getObjectByProperty('type', 'PerspectiveCamera');
+                        if(cam) {
+                            cam.position.x += (Math.random() - 0.5) * 3;
+                            cam.position.y += (Math.random() - 0.5) * 3;
+                        }
                     }, 100);
                 }
             }
         }
 
         // ==========================================
-        // JOGADOR
+        // JOGADOR (LANTERNA REALISTA E CONE DE LUZ)
         // ==========================================
         class Player {
             constructor(camera, scene, env, state) {
                 this.camera = camera; this.scene = scene; this.env = env; this.state = state;
-                this.controls = new PointerLockControls(camera, document.body);
+                
+                if (!isMobile) {
+                    this.controls = new PointerLockControls(camera, document.body);
+                }
                 
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isCrouching = false; this.isSprinting = false; this.isMoving = false;
@@ -493,14 +577,39 @@
                 
                 this.playerBox = new THREE.Box3(); this.hitboxSize = new THREE.Vector3(2, 4, 2);
 
-                this.flashlight = new THREE.SpotLight(0xffffff, 30, 100, Math.PI / 5, 0.4, 1.5);
-                this.flashlight.castShadow = true; this.camera.add(this.flashlight);
-                this.flashlightTarget = new THREE.Object3D(); this.scene.add(this.flashlightTarget);
-                this.flashlight.target = this.flashlightTarget; this.flashlight.visible = false;
+                // LANTERNA
+                this.flashlight = new THREE.SpotLight(0xffeedd, 3000, 80, Math.PI / 5, 0.5, 1.5);
+                this.flashlight.castShadow = true;
+                this.flashlight.shadow.mapSize.width = 512;
+                this.flashlight.shadow.mapSize.height = 512;
+                this.flashlight.shadow.bias = -0.005;
+                this.camera.add(this.flashlight);
+                
+                // O alvo da luz agora é um filho da câmera para apontar sempre para frente
+                this.flashlight.target.position.set(0, 0, -1);
+                this.camera.add(this.flashlight.target);
+                this.flashlight.visible = false;
+
+                // CONE VOLUMÉTRICO (Efeito visual de feixe de luz)
+                const coneGeo = new THREE.CylinderGeometry(0.1, 5, 30, 16, 1, true);
+                coneGeo.translate(0, -15, 0);
+                coneGeo.rotateX(Math.PI / 2);
+                const coneMat = new THREE.MeshBasicMaterial({ 
+                    color: 0xffffdd, 
+                    transparent: true, 
+                    opacity: 0.1, 
+                    side: THREE.DoubleSide, 
+                    depthWrite: false, 
+                    blending: THREE.AdditiveBlending 
+                });
+                this.lightCone = new THREE.Mesh(coneGeo, coneMat);
+                this.camera.add(this.lightCone);
+                this.lightCone.visible = false;
 
                 this.battery = 100; this.isFlashlightOn = false;
                 this.batteryFill = document.getElementById('battery-fill');
 
+                // Corpo FPS
                 this.bodyGroup = new THREE.Group();
                 const skinMat = new THREE.MeshStandardMaterial({ color: 0xd2a679 });
                 const armR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2, 0.4), skinMat); armR.position.set(0.8, -1, -1); armR.rotation.x = -0.5;
@@ -516,6 +625,7 @@
             }
 
             onKeyDown(e) {
+                if (isMobile) return;
                 if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyC', 'ShiftLeft', 'Space'].includes(e.code)) e.preventDefault();
                 if (this.state.isGameOver || this.state.isWin || this.state.isCinematic || this.state.isPaused || this.state.isMenuActive) return;
                 
@@ -526,12 +636,13 @@
                     case 'KeyD': this.moveR = true; break;
                     case 'ShiftLeft': this.isSprinting = true; break;
                     case 'KeyC': this.isCrouching = true; this.baseY = 2.0; break; 
-                    case 'KeyF': if(this.battery > 0) { this.isFlashlightOn = !this.isFlashlightOn; this.flashlight.visible = this.isFlashlightOn; } break;
+                    case 'KeyF': this.toggleFlashlight(); break;
                     case 'Escape': if(!this.state.isCinematic) { document.getElementById('pause-menu').classList.remove('hidden'); this.state.isPaused = true; document.exitPointerLock(); } break;
                 }
             }
 
             onKeyUp(e) {
+                if (isMobile) return;
                 switch (e.code) {
                     case 'KeyW': this.moveF = false; break;
                     case 'KeyS': this.moveB = false; break;
@@ -542,6 +653,14 @@
                 }
             }
 
+            toggleFlashlight() {
+                if(this.battery > 0) { 
+                    this.isFlashlightOn = !this.isFlashlightOn; 
+                    this.flashlight.visible = this.isFlashlightOn; 
+                    this.lightCone.visible = this.isFlashlightOn;
+                }
+            }
+
             resetControls() {
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isSprinting = false; this.isCrouching = false;
@@ -549,7 +668,8 @@
             }
 
             update(delta, time, narrative) {
-                if (!this.controls.isLocked || this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
+                if (!isMobile && !this.controls.isLocked) return;
+                if (this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
 
                 let speed = 40.0;
                 if (this.isSprinting && !this.isCrouching) speed = 80.0;
@@ -599,16 +719,18 @@
                     this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.1;
                 }
 
+                // Tremor da lanterna
                 if (this.isFlashlightOn && this.battery > 0) {
-                    const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion);
-                    const targetPos = this.camera.position.clone().add(fwd.multiplyScalar(20));
-                    targetPos.x += Math.sin(time*8)*0.5; targetPos.y += Math.cos(time*6)*0.5;
-                    this.flashlightTarget.position.lerp(targetPos, 0.5);
+                    this.flashlight.target.position.x = Math.sin(time * 8) * 0.1;
+                    this.flashlight.target.position.y = Math.cos(time * 6) * 0.1;
                     
                     this.battery -= 1.0 * delta;
                     this.batteryFill.style.width = `${Math.max(0, this.battery)}%`;
                     if (this.battery < 20) this.batteryFill.style.backgroundColor = 'red';
-                    if (this.battery <= 0) { this.battery = 0; this.isFlashlightOn = false; this.flashlight.visible = false; }
+                    if (this.battery <= 0) { 
+                        this.battery = 0; this.isFlashlightOn = false; 
+                        this.flashlight.visible = false; this.lightCone.visible = false; 
+                    }
                 }
 
                 this.checkInteraction(narrative);
@@ -622,26 +744,26 @@
                     const item = this.env.collectibles[i];
                     if (this.camera.position.distanceTo(item.position) < 10) { 
                         canInteract = true; prompt.classList.remove('hidden');
-                        prompt.innerText = "[E] Examinar Dados";
-                        if (window.keys['KeyE']) {
+                        prompt.innerText = isMobile ? "Toque em AÇÃO" : "[E] Examinar Dados";
+                        if (window.keys['KeyE'] || window.mobileInteract) {
                             narrative.showModal("LOG DE DADOS", item.userData.text);
                             this.env.scene.remove(item); this.env.collectibles.splice(i, 1);
-                            window.keys['KeyE'] = false; break;
+                            window.keys['KeyE'] = false; window.mobileInteract = false; break;
                         }
                     }
                 }
 
                 if (this.camera.position.distanceTo(this.env.shipPos) < 50) {
-                    canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Embarcar e Escapar";
-                    if (window.keys['KeyE']) {
+                    canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = isMobile ? "Toque em AÇÃO" : "[E] Embarcar e Escapar";
+                    if (window.keys['KeyE'] || window.mobileInteract) {
                         if (this.state.datapads >= 5) {
                             this.state.isWin = true;
                             document.getElementById('win-screen').classList.remove('hidden');
-                            document.exitPointerLock();
+                            if(!isMobile) document.exitPointerLock();
                         } else {
                             narrative.triggerRadio("Ainda faltam dados. Não posso sair sem eles.");
                         }
-                        window.keys['KeyE'] = false;
+                        window.keys['KeyE'] = false; window.mobileInteract = false;
                     }
                 }
                 if (!canInteract) prompt.classList.add('hidden');
@@ -714,7 +836,7 @@
                     if (dist < 10) {
                         this.player.state.isGameOver = true;
                         document.getElementById('game-over-screen').classList.remove('hidden');
-                        document.exitPointerLock();
+                        if(!isMobile) document.exitPointerLock();
                     }
                 } else {
                     this.direction.subVectors(this.targetNode, this.group.position).setY(0);
@@ -755,7 +877,8 @@
             showModal(title, text) {
                 this.modalUI.querySelector('#modal-title').innerText = title;
                 this.modalUI.querySelector('#modal-text').innerText = text;
-                this.modalUI.classList.remove('hidden'); document.exitPointerLock();
+                this.modalUI.classList.remove('hidden'); 
+                if(!isMobile) document.exitPointerLock();
                 this.state.datapads++; this.updateHUD();
                 
                 if(this.state.datapads === 2) { 
@@ -784,7 +907,7 @@
 
                 this.renderer = new THREE.WebGLRenderer({ antialias: false });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setPixelRatio(0.5); 
+                this.renderer.setPixelRatio(isMobile ? 0.5 : 0.5); 
                 this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.BasicShadowMap; 
                 document.getElementById('game-container').appendChild(this.renderer.domElement);
 
@@ -800,7 +923,98 @@
                 this.menuAngle = 0;
                 this.initUI();
                 this.setupPauseHandling(); 
+                if (isMobile) this.setupMobileControls();
                 this.animate();
+            }
+
+            setupMobileControls() {
+                document.getElementById('mobile-controls').style.display = 'block';
+                document.getElementById('crosshair').style.display = 'none';
+
+                const zone = document.getElementById('joystick-zone');
+                const knob = document.getElementById('joystick-knob');
+                let joyActive = false;
+                let joyStart = { x: 0, y: 0 };
+
+                zone.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    joyActive = true;
+                    const rect = zone.getBoundingClientRect();
+                    joyStart.x = rect.left + rect.width / 2;
+                    joyStart.y = rect.top + rect.height / 2;
+                });
+
+                zone.addEventListener('touchmove', (e) => {
+                    if (!joyActive) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    let dx = touch.clientX - joyStart.x;
+                    let dy = touch.clientY - joyStart.y;
+                    
+                    const maxDist = 40;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
+                    
+                    knob.style.transform = `translate(${dx}px, ${dy}px)`;
+
+                    this.player.moveF = dy < -15;
+                    this.player.moveB = dy > 15;
+                    this.player.moveL = dx < -15;
+                    this.player.moveR = dx > 15;
+                });
+
+                zone.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    joyActive = false;
+                    knob.style.transform = `translate(0px, 0px)`;
+                    this.player.moveF = false; this.player.moveB = false; this.player.moveL = false; this.player.moveR = false;
+                });
+
+                let lookActive = false;
+                let lookStart = { x: 0, y: 0 };
+                const lookZone = document.getElementById('game-container');
+
+                lookZone.addEventListener('touchstart', (e) => {
+                    if (e.target.closest('#joystick-zone') || e.target.closest('#action-buttons')) return;
+                    lookActive = true;
+                    lookStart.x = e.touches[0].clientX;
+                    lookStart.y = e.touches[0].clientY;
+                });
+
+                lookZone.addEventListener('touchmove', (e) => {
+                    if (!lookActive) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - lookStart.x;
+                    const deltaY = touch.clientY - lookStart.y;
+
+                    const sensitivity = 0.005;
+                    this.camera.rotation.y -= deltaX * sensitivity;
+                    this.camera.rotation.x -= deltaY * sensitivity;
+                    this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
+
+                    lookStart.x = touch.clientX;
+                    lookStart.y = touch.clientY;
+                });
+
+                lookZone.addEventListener('touchend', () => { lookActive = false; });
+
+                document.getElementById('btn-mob-sprint').addEventListener('touchstart', (e) => { e.preventDefault(); this.player.isSprinting = true; });
+                document.getElementById('btn-mob-sprint').addEventListener('touchend', (e) => { e.preventDefault(); this.player.isSprinting = false; });
+                
+                document.getElementById('btn-mob-crouch').addEventListener('touchstart', (e) => { 
+                    e.preventDefault(); 
+                    this.player.isCrouching = !this.player.isCrouching; 
+                    this.player.baseY = this.player.isCrouching ? 2.0 : 4.0;
+                });
+
+                document.getElementById('btn-mob-flash').addEventListener('touchstart', (e) => { e.preventDefault(); this.player.toggleFlashlight(); });
+
+                document.getElementById('btn-mob-interact').addEventListener('touchstart', (e) => { 
+                    e.preventDefault(); 
+                    window.mobileInteract = true; 
+                    setTimeout(() => window.mobileInteract = false, 200);
+                });
             }
 
             setupPauseHandling() {
@@ -810,15 +1024,17 @@
                 window.addEventListener("blur", () => {
                     if (!this.state.isMenuActive && !this.state.isPaused) this.pauseGame();
                 });
-                document.getElementById('game-container').addEventListener('click', () => {
-                    if (!this.state.isMenuActive && !this.state.isPaused && !this.player.controls.isLocked) this.player.controls.lock();
-                });
+                if (!isMobile) {
+                    document.getElementById('game-container').addEventListener('click', () => {
+                        if (!this.state.isMenuActive && !this.state.isPaused && !this.player.controls.isLocked) this.player.controls.lock();
+                    });
+                }
             }
 
             pauseGame() {
                 this.state.isPaused = true;
                 document.getElementById('pause-menu').classList.remove('hidden');
-                document.exitPointerLock();
+                if(!isMobile) document.exitPointerLock();
                 this.clock.getDelta(); 
                 window.keys = {};
                 this.player.resetControls();
@@ -827,11 +1043,23 @@
             initUI() {
                 document.getElementById('btn-start').onclick = () => this.startGame();
                 document.getElementById('btn-quit').onclick = () => { if(confirm("Deseja realmente sair?")) window.close(); };
+                
+                const settingsMenu = document.getElementById('settings-menu');
+                document.getElementById('btn-settings').onclick = () => settingsMenu.classList.remove('hidden');
+                document.getElementById('btn-pause-settings').onclick = () => settingsMenu.classList.remove('hidden');
+                
+                document.getElementById('btn-close-settings').onclick = () => {
+                    settingsMenu.classList.add('hidden');
+                    weatherSettings.rain = parseInt(document.getElementById('rain-slider').value);
+                    weatherSettings.lightning = parseInt(document.getElementById('lightning-slider').value);
+                    this.environment.updateWeatherSettings();
+                };
+
                 document.getElementById('btn-resume').onclick = () => { 
                     document.getElementById('pause-menu').classList.add('hidden'); 
                     this.state.isPaused = false; 
                     this.clock.getDelta(); 
-                    this.player.controls.lock(); 
+                    if(!isMobile) this.player.controls.lock(); 
                 };
                 document.getElementById('btn-exit').onclick = () => location.reload();
 
@@ -857,13 +1085,13 @@
                     this.state.isCinematic = true;
                     document.body.classList.add('cinematic-active');
                     document.getElementById('subtitle').classList.remove('hidden');
-                    document.getElementById('subtitle').innerText = "Explore as 4 Zonas. Encontre os 5 Data Pads. Chegue ao Navio no Sudeste.";
+                    document.getElementById('subtitle').innerText = "A tempestade está devastando a ilha. Ligue a lanterna [F] e encontre os dados.";
                     
                     setTimeout(() => {
                         document.body.classList.remove('cinematic-active');
                         document.getElementById('subtitle').classList.add('hidden');
                         this.state.isCinematic = false;
-                        this.player.controls.lock();
+                        if(!isMobile) this.player.controls.lock();
                         this.narrative.triggerRadio("Vance, o sinal da Biosyn está caindo. Vá rápido.");
                     }, 5000);
                 }, 500);
@@ -906,8 +1134,6 @@
                     }
 
                     const enemies = [this.raptor, this.trex].filter(e => e !== null);
-                    
-                    // MINI-MAPA CORRIGIDO E ATUALIZANDO
                     this.minimap.draw(this.camera.position, this.camera.rotation.y, enemies, this.environment.collectibles, this.environment.shipPos);
 
                     let zoneName = "Centro (Visitantes)";
