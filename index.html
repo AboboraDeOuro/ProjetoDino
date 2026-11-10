@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurassic Park: Biosyn Protocol - PSX Edition</title>
+    <title>Jurassic Park: Biosyn Protocol - Full Game</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -58,19 +58,20 @@
             background: rgba(0,0,0,0.7); padding: 15px; border-left: 4px solid #00ff00;
             text-align: right; font-size: 18px;
         }
+        #act-indicator { font-size: 24px; color: #ffff00; margin-bottom: 10px; }
 
         #radio-ui {
             position: absolute; bottom: 30px; right: 30px; width: 350px;
             background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #ff0000;
         }
 
-        #datapad-ui {
+        #ui-modal {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: #000; border: 2px solid #00ff00; padding: 30px;
             width: 400px; pointer-events: auto; text-align: center; z-index: 15;
         }
 
-        #datapad-ui button {
+        #ui-modal button {
             background: #00ff00; color: #000; border: none; padding: 10px 20px;
             font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px;
         }
@@ -88,9 +89,6 @@
             background: transparent; color: #00ff00; border: 2px solid #00ff00; cursor: pointer;
         }
         .screen button:hover { background: #00ff00; color: #000; }
-        
-        #game-over h1 { color: #ff0000; }
-        #win-screen h1 { color: #00ff00; }
     </style>
 </head>
 <body>
@@ -107,6 +105,7 @@
         </div>
 
         <div id="objectives">
+            <div id="act-indicator">ATO I - TARDE</div>
             <div id="obj-pads">Data Pads: 0/5</div>
             <div id="obj-fuse">Fusível: Não</div>
             <div id="obj-gate">Portão: Trancado</div>
@@ -117,23 +116,23 @@
             <div id="radio-text"></div>
         </div>
 
-        <div id="datapad-ui" class="hidden">
-            <h3>LOG DE DADOS RECUPERADO</h3>
-            <p id="datapad-text"></p>
-            <button onclick="document.getElementById('datapad-ui').classList.add('hidden'); document.getElementById('game-container').requestPointerLock();">FECHAR</button>
+        <div id="ui-modal" class="hidden">
+            <h3 id="modal-title">SISTEMA</h3>
+            <p id="modal-text"></p>
+            <button onclick="document.getElementById('ui-modal').classList.add('hidden'); document.getElementById('game-container').requestPointerLock();">FECHAR</button>
         </div>
     </div>
 
     <div id="start-screen" class="screen">
         <h1>ISLA NUBLAR</h1>
         <h2>1994 - BIOSYN BLACK OPS</h2>
-        <p>Dr. Gabriel Vance, recupere os 5 Data Pads e o fusível. Cuidado com o Raptor. Se ouvir algo, agache-se (Shift) e apague a lanterna (F).</p>
+        <p>Dr. Gabriel Vance, o sol está se pondo. Recupere os 5 Data Pads, encontre o fusível e fuja antes que fique escuro. O T-Rex está solto.</p>
         <button id="start-btn">INICIAR INFILTRAÇÃO</button>
     </div>
 
     <div id="game-over-screen" class="screen hidden">
-        <h1>VOCÊ FOI CAÇADO</h1>
-        <p>O Velociraptor sentiu o seu cheiro.</p>
+        <h1>VOCÊ FOI DEVORADO</h1>
+        <p>O Tiranossauro sentiu o seu cheiro.</p>
         <button onclick="location.reload()">TENTAR NOVAMENTE</button>
     </div>
 
@@ -155,26 +154,11 @@
     <script type="module">
         import * as THREE from 'three';
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         // ==========================================
-        // UTILITÁRIOS E ESTADO (TEXTOS LOCAIS)
+        // UTILITÁRIOS E ESTADO DO JOGO
         // ==========================================
-        const RADIO_TEXTS = [
-            "A Biosyn monitora seus passos, Vance. Não falhe.",
-            "Os sensores térmicos indicam atividade do Raptor no setor sul.",
-            "Lembre-se: apague a lanterna e agache se ouvir passos pesados.",
-            "O portão principal só abrirá com energia restaurada.",
-            "Nedry era um amador. Você é a nossa elite. Traga os dados."
-        ];
-
-        const LORE_TEXTS = [
-            "LOG 01: A cerca sul falhou. O T-Rex quebrou a barreira de alta tensão.",
-            "LOG 02: Os raptores estão caçando em bando. Eles testam a cerca.",
-            "LOG 03: O fusível principal foi removido para manutenção. Deve estar perto dos veículos.",
-            "LOG 04: A Biosyn não se importa com a InGen. Só queremos o código genético.",
-            "LOG 05: Se você está lendo isso, o portão pode ser aberto. Corra para o leste."
-        ];
-
         const getTerrainHeight = (x, z) => {
             let height = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 3;
             height += Math.sin(x * 0.1) * 1.5;
@@ -183,6 +167,22 @@
             return height;
         };
 
+        const RADIO_TEXTS = [
+            "Vance, o sol está baixando. A temperatura vai cair.",
+            "Os sensores térmicos indicam que ELE está acordado.",
+            "Se ouvir passos pesados, apague a lanterna e agache.",
+            "A energia do portão principal ainda está cortada.",
+            "A InGen perdeu o controle. Você está por conta própria."
+        ];
+
+        const LORE_TEXTS = [
+            "LOG 01: A cerca sul falhou. O T-Rex quebrou a barreira.",
+            "LOG 02: O T-Rex é atraído por luz e movimento.",
+            "LOG 03: O fusível principal foi jogado perto da caixa d'água.",
+            "LOG 04: Se o T-Rex te vir, corra em zigue-zague. É a sua única chance.",
+            "LOG 05: O portão do leste pode ser aberto se a energia voltar."
+        ];
+
         class GameState {
             constructor() {
                 this.datapads = 0;
@@ -190,6 +190,7 @@
                 this.gateOpen = false;
                 this.isGameOver = false;
                 this.isWin = false;
+                this.act = 1; // 1 = Tarde, 2 = Entardecer, 3 = Noite
             }
         }
 
@@ -197,24 +198,37 @@
             constructor(gameState) {
                 this.state = gameState;
                 this.radioText = document.getElementById('radio-text');
-                this.datapadUI = document.getElementById('datapad-ui');
-                this.datapadText = document.getElementById('datapad-text');
+                this.modalUI = document.getElementById('ui-modal');
+                this.modalTitle = document.getElementById('modal-title');
+                this.modalText = document.getElementById('modal-text');
+                
                 this.objPads = document.getElementById('obj-pads');
                 this.objFuse = document.getElementById('obj-fuse');
                 this.objGate = document.getElementById('obj-gate');
+                this.actIndicator = document.getElementById('act-indicator');
             }
 
             updateHUD() {
                 this.objPads.innerText = `Data Pads: ${this.state.datapads}/5`;
                 this.objFuse.innerText = `Fusível: ${this.state.hasFuse ? 'Sim' : 'Não'}`;
                 this.objGate.innerText = `Portão: ${this.state.gateOpen ? 'Aberto' : 'Trancado'}`;
+                
+                if(this.state.act === 1) this.actIndicator.innerText = "ATO I - TARDE";
+                if(this.state.act === 2) this.actIndicator.innerText = "ATO II - ENTARDECER";
+                if(this.state.act === 3) this.actIndicator.innerText = "ATO III - NOITE";
             }
 
             triggerRadio() {
-                // Puxa texto local aleatório
                 const text = RADIO_TEXTS[Math.floor(Math.random() * RADIO_TEXTS.length)];
                 this.radioText.innerText = text;
                 setTimeout(() => { this.radioText.innerText = ""; }, 6000);
+            }
+
+            showModal(title, text) {
+                this.modalTitle.innerText = title;
+                this.modalText.innerText = text;
+                this.modalUI.classList.remove('hidden');
+                document.exitPointerLock();
             }
 
             showDataPad(padId) {
@@ -222,16 +236,27 @@
                 this.state.datapads++;
                 this.updateHUD();
                 
-                // Puxa o texto local baseado no ID
-                this.datapadText.innerText = LORE_TEXTS[padId - 1] || "Dados corrompidos.";
+                this.showModal("LOG DE DADOS", LORE_TEXTS[padId - 1] || "Dados corrompidos.");
                 
-                this.datapadUI.classList.remove('hidden');
-                document.exitPointerLock();
+                // Avançar o tempo baseado nos Data Pads
+                if(this.state.datapads === 2 && this.state.act === 1) {
+                    this.state.act = 2;
+                    this.updateHUD();
+                    this.triggerRadio();
+                } else if (this.state.datapads === 4 && this.state.act === 2) {
+                    this.state.act = 3;
+                    this.updateHUD();
+                    this.triggerRadio();
+                }
+            }
+
+            showDialogue(name, text) {
+                this.showModal(`[${name}]`, text);
             }
         }
 
         // ==========================================
-        // AMBIENTE (TERRENO, MODELOS, PUZZLES)
+        // AMBIENTE (CICLO DIA/NOITE, DECORAÇÕES)
         // ==========================================
         class Environment {
             constructor(scene, gameState, narrativeManager) {
@@ -240,43 +265,57 @@
                 this.narrative = narrativeManager;
                 this.collidables = [];
                 this.collectibles = [];
+                this.npcs = [];
                 this.gateCollider = null;
                 this.fuseBoxPos = new THREE.Vector3(15, 0, -20);
                 this.gatePos = new THREE.Vector3(0, 0, -35);
+
+                // Luzes para o ciclo dia/noite
+                this.sunLight = new THREE.DirectionalLight(0xffffff, 1);
+                this.sunLight.castShadow = true;
+                this.sunLight.shadow.mapSize.width = 2048;
+                this.sunLight.shadow.mapSize.height = 2048;
+                this.scene.add(this.sunLight);
+                
+                this.hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+                this.scene.add(this.hemiLight);
 
                 this.createTerrain();
                 this.createMountains();
                 this.buildExplorers();
                 this.buildFenceAndGate();
                 this.buildItems();
+                this.buildDecorations();
+                this.buildNPCs();
             }
 
-            createProceduralTexture() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 256; canvas.height = 256;
-                const ctx = canvas.getContext('2d');
-                
-                ctx.fillStyle = '#1a1a0f';
-                ctx.fillRect(0, 0, 256, 256);
-                
-                for(let i=0; i<3000; i++) {
-                    ctx.fillStyle = Math.random() > 0.5 ? '#2b2b1a' : '#0d0d08';
-                    ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2);
+            updateLighting() {
+                // Cores baseadas no Ato
+                if (this.state.act === 1) {
+                    // Tarde: Sol forte, céu azul
+                    this.scene.background = new THREE.Color(0x87CEEB);
+                    this.scene.fog.color.setHex(0x87CEEB);
+                    this.sunLight.color.setHex(0xffffee);
+                    this.sunLight.intensity = 2;
+                    this.sunLight.position.set(50, 100, 50);
+                    this.hemiLight.intensity = 1;
+                } else if (this.state.act === 2) {
+                    // Entardecer: Laranja, sombras longas
+                    this.scene.background = new THREE.Color(0xff8c00);
+                    this.scene.fog.color.setHex(0xff8c00);
+                    this.sunLight.color.setHex(0xffaa00);
+                    this.sunLight.intensity = 1;
+                    this.sunLight.position.set(-50, 30, 50);
+                    this.hemiLight.intensity = 0.5;
+                } else {
+                    // Noite: Escuro, luar azulado
+                    this.scene.background = new THREE.Color(0x050510);
+                    this.scene.fog.color.setHex(0x050510);
+                    this.sunLight.color.setHex(0x334466);
+                    this.sunLight.intensity = 0.2;
+                    this.sunLight.position.set(0, 50, -50);
+                    this.hemiLight.intensity = 0.1;
                 }
-
-                ctx.fillStyle = '#050503';
-                for(let i=0; i<10; i++) {
-                    let x = Math.random() * 256; let y = Math.random() * 256;
-                    ctx.beginPath(); ctx.ellipse(x, y, 15, 25, 0, 0, Math.PI*2); ctx.fill();
-                    ctx.beginPath(); ctx.ellipse(x-20, y-20, 8, 15, -Math.PI/4, 0, Math.PI*2); ctx.fill();
-                    ctx.beginPath(); ctx.ellipse(x+20, y-20, 8, 15, Math.PI/4, 0, Math.PI*2); ctx.fill();
-                }
-
-                const tex = new THREE.CanvasTexture(canvas);
-                tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-                tex.repeat.set(30, 30);
-                tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
-                return tex;
             }
 
             createTerrain() {
@@ -284,14 +323,13 @@
                 const pos = geo.attributes.position;
                 
                 for (let i = 0; i < pos.count; i++) {
-                    const x = pos.getX(i);
-                    const y = pos.getY(i);
+                    const x = pos.getX(i); const y = pos.getY(i);
                     pos.setZ(i, getTerrainHeight(x, -y));
                 }
                 geo.computeVertexNormals();
 
                 const mat = new THREE.MeshStandardMaterial({ 
-                    map: this.createProceduralTexture(), 
+                    color: 0x2e4a25, // Grama mais viva
                     roughness: 1,
                     flatShading: true 
                 });
@@ -303,88 +341,99 @@
             }
 
             createMountains() {
-                const mat = new THREE.MeshStandardMaterial({ color: 0x111111, flatShading: true });
+                const mat = new THREE.MeshStandardMaterial({ color: 0x223311, flatShading: true });
                 for(let i=0; i<15; i++) {
                     const mount = new THREE.Mesh(new THREE.ConeGeometry(20 + Math.random()*20, 30 + Math.random()*30, 4), mat);
                     const angle = (i / 15) * Math.PI * 2;
                     const dist = 80 + Math.random() * 20;
                     mount.position.set(Math.cos(angle)*dist, 0, Math.sin(angle)*dist);
-                    mount.rotation.y = Math.random();
                     this.scene.add(mount);
                 }
             }
 
+            buildDecorations() {
+                // Árvores e Rochas
+                const treeMat = new THREE.MeshStandardMaterial({ color: 0x1a3a10, flatShading: true });
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, flatShading: true });
+                const rockMat = new THREE.MeshStandardMaterial({ color: 0x555555, flatShading: true });
+
+                for(let i=0; i<40; i++) {
+                    const x = (Math.random() - 0.5) * 160;
+                    const z = (Math.random() - 0.5) * 160;
+                    
+                    if (Math.sqrt(x*x + z*z) < 15) continue; // Não spawnar no início
+
+                    if (Math.random() > 0.5) {
+                        // Árvore
+                        const tree = new THREE.Group();
+                        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 4), trunkMat);
+                        trunk.position.y = 2; trunk.castShadow = true; tree.add(trunk);
+                        const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 6, 5), treeMat);
+                        leaves.position.y = 6; leaves.castShadow = true; tree.add(leaves);
+                        
+                        tree.position.set(x, getTerrainHeight(x,z), z);
+                        this.scene.add(tree);
+                        this.collidables.push(new THREE.Box3().setFromObject(trunk));
+                    } else {
+                        // Rocha
+                        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random()*2), rockMat);
+                        rock.position.set(x, getTerrainHeight(x,z), z);
+                        rock.rotation.set(Math.random(), Math.random(), Math.random());
+                        rock.castShadow = true; rock.receiveShadow = true;
+                        this.scene.add(rock);
+                    }
+                }
+            }
+
             buildExplorers() {
-                const carBodyMat = new THREE.MeshStandardMaterial({ color: 0xaa1111, flatShading: true });
+                const carBodyMat = new THREE.MeshStandardMaterial({ color: 0xcc1111, flatShading: true });
                 const carRoofMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, flatShading: true });
-                const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.8 });
-                const tireMat = new THREE.MeshStandardMaterial({ color: 0x111111, flatShading: true });
+                const tireMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
                 
                 for (let i = 0; i < 2; i++) {
                     const car = new THREE.Group();
                     const body = new THREE.Mesh(new THREE.BoxGeometry(3, 1.5, 5), carBodyMat);
-                    body.position.y = 1; body.castShadow = true; body.receiveShadow = true; car.add(body);
-                    
+                    body.position.y = 1; body.castShadow = true; car.add(body);
                     const roof = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.2, 3), carRoofMat);
                     roof.position.set(0, 2.3, -0.5); roof.castShadow = true; car.add(roof);
 
-                    const windshield = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1, 0.2), glassMat);
-                    windshield.position.set(0, 2.3, 1.1); car.add(windshield);
-
-                    const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.4, 8);
-                    const positions = [[-1.4, 0.6, 1.5], [1.4, 0.6, 1.5], [-1.4, 0.6, -1.5], [1.4, 0.6, -1.5]];
-                    positions.forEach(pos => {
-                        const wheel = new THREE.Mesh(wheelGeo, tireMat);
-                        wheel.rotation.z = Math.PI / 2;
-                        wheel.position.set(...pos);
-                        wheel.castShadow = true; car.add(wheel);
-                    });
-
                     const spawnX = i === 0 ? -8 : 8; const spawnZ = -15;
                     car.position.set(spawnX, getTerrainHeight(spawnX, spawnZ), spawnZ);
-                    
                     if (i === 1) { car.rotation.z = Math.PI / 2; car.position.y += 1.5; } 
                     else { car.rotation.y = Math.PI / 4; }
                     
                     this.scene.add(car);
-                    const box = new THREE.Box3().setFromObject(car);
-                    this.collidables.push(box);
+                    this.collidables.push(new THREE.Box3().setFromObject(car));
                 }
             }
 
             buildFenceAndGate() {
-                const postMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.8, flatShading: true });
-                
+                const postMat = new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true });
                 for(let i=-20; i<=20; i+=5) {
                     if (i === 0) continue;
                     const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 8, 0.5), postMat);
                     const zPos = -30;
                     post.position.set(i, getTerrainHeight(i, zPos) + 4, zPos);
-                    post.rotation.z = (Math.random() - 0.5) * 0.2;
                     post.castShadow = true; this.scene.add(post);
                 }
                 
                 const gateGroup = new THREE.Group();
-                const gateMesh = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 0.5), new THREE.MeshStandardMaterial({color: 0x555555, metalness: 0.5, flatShading: true}));
+                const gateMesh = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 0.5), new THREE.MeshStandardMaterial({color: 0x555555}));
                 gateMesh.position.y = 3; gateMesh.castShadow = true; gateGroup.add(gateMesh);
-                
                 this.gatePos.set(0, getTerrainHeight(0, -30), -30);
                 gateGroup.position.copy(this.gatePos);
-                this.scene.add(gateGroup);
-                this.gate = gateGroup;
-                
+                this.scene.add(gateGroup); this.gate = gateGroup;
                 this.gateCollider = new THREE.Box3().setFromObject(gateGroup);
                 this.collidables.push(this.gateCollider);
 
-                const fuseBox = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 0.5), new THREE.MeshStandardMaterial({color: 0x888800, flatShading: true}));
+                const fuseBox = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 0.5), new THREE.MeshStandardMaterial({color: 0x888800}));
                 this.fuseBoxPos.set(10, getTerrainHeight(10, -25) + 1, -25);
-                fuseBox.position.copy(this.fuseBoxPos);
-                fuseBox.castShadow = true; this.scene.add(fuseBox);
+                fuseBox.position.copy(this.fuseBoxPos); fuseBox.castShadow = true; this.scene.add(fuseBox);
             }
 
             buildItems() {
                 const padGeo = new THREE.BoxGeometry(0.4, 0.5, 0.1);
-                const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.8 });
+                const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1 });
                 
                 for(let i=0; i<5; i++) {
                     const pad = new THREE.Mesh(padGeo, padMat);
@@ -397,20 +446,34 @@
                 const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.6), new THREE.MeshStandardMaterial({color: 0xffff00, emissive: 0xaaaa00}));
                 const fx = 20, fz = 10;
                 fuse.position.set(fx, getTerrainHeight(fx, fz) + 1, fz);
-                fuse.rotation.z = Math.PI/2;
-                fuse.userData.type = 'fuse';
+                fuse.rotation.z = Math.PI/2; fuse.userData.type = 'fuse';
                 this.scene.add(fuse); this.collectibles.push(fuse);
+            }
+
+            buildNPCs() {
+                // NPC Sobrevivente perto dos carros
+                const npcGroup = new THREE.Group();
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0xd2a679 });
+                const clothMat = new THREE.MeshStandardMaterial({ color: 0x224466 });
+                
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.5), clothMat);
+                body.position.y = 0.75; body.castShadow = true; npcGroup.add(body);
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.3), skinMat);
+                head.position.y = 1.7; head.castShadow = true; npcGroup.add(head);
+                
+                const nx = -5, nz = -12;
+                npcGroup.position.set(nx, getTerrainHeight(nx, nz), nz);
+                this.scene.add(npcGroup);
+                this.npcs.push({ mesh: npcGroup, name: "Sobrevivente InGen", line: "Ele está lá fora... o T-Rex. Apague essa lanterna se ouvir passos. O fusível caiu perto do portão!" });
             }
 
             interact(playerPos, narrative) {
                 if (playerPos.distanceTo(this.fuseBoxPos) < 3.5) {
                     if (this.state.hasFuse && !this.state.gateOpen) {
                         this.state.gateOpen = true;
-                        narrative.updateHUD();
-                        narrative.triggerRadio();
+                        narrative.updateHUD(); narrative.triggerRadio();
                         this.scene.remove(this.gate);
                         this.collidables = this.collidables.filter(b => b !== this.gateCollider);
-                        return;
                     } else if (!this.state.hasFuse) {
                         narrative.triggerRadio();
                     }
@@ -426,50 +489,52 @@
         }
 
         // ==========================================
-        // INIMIGO (RAPTOR)
+        // INIMIGO (T-REX GLB)
         // ==========================================
         class EnemyAI {
             constructor(scene, player, gameState) {
                 this.scene = scene; this.player = player; this.state = gameState;
                 this.group = new THREE.Group();
-                const skinMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true });
-                const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0xffaa00 });
-
-                const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 3), skinMat);
-                body.position.y = 2; body.castShadow = true; this.group.add(body);
-
-                const neck = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.8), skinMat);
-                neck.position.set(0, 2.8, 1.2); neck.rotation.x = Math.PI/4; neck.castShadow = true; this.group.add(neck);
-
-                const head = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 1.8), skinMat);
-                head.position.set(0, 3.5, 2); head.castShadow = true; this.group.add(head);
+                this.mixer = null; // Para animações GLB
                 
-                const eye1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), eyeMat);
-                eye1.position.set(-0.4, 3.7, 2.6); this.group.add(eye1);
-                const eye2 = eye1.clone(); eye2.position.x = 0.4; this.group.add(eye2);
-
-                const tail = new THREE.Mesh(new THREE.ConeGeometry(0.5, 4, 4), skinMat);
-                tail.position.set(0, 2, -3); tail.rotation.x = -Math.PI/2; tail.castShadow = true; this.group.add(tail);
-
-                this.legs = [];
-                for(let i=0; i<2; i++) {
-                    const legGroup = new THREE.Group();
-                    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.5, 0.5), skinMat);
-                    thigh.position.y = -0.75; thigh.castShadow = true; legGroup.add(thigh);
-                    legGroup.position.set(i===0 ? -0.6 : 0.6, 1.5, -0.5);
-                    this.group.add(legGroup); this.legs.push(legGroup);
-                }
+                // Carrega o Modelo t_rex.glb que você colocou no GitHub
+                const loader = new GLTFLoader();
+                loader.load('./t_rex.glb', (gltf) => {
+                    this.model = gltf.scene;
+                    
+                    // Ajusta escala e sombras
+                    this.model.scale.set(1.5, 1.5, 1.5); 
+                    this.model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    
+                    this.group.add(this.model);
+                    
+                    // Se o modelo tiver animação, toca ela
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        this.mixer = new THREE.AnimationMixer(this.model);
+                        this.mixer.clipAction(gltf.animations[0]).play();
+                    }
+                }, undefined, (error) => {
+                    console.error("Erro ao carregar t_rex.glb:", error);
+                    // Fallback caso o arquivo não exista
+                    const box = new THREE.Mesh(new THREE.BoxGeometry(3,4,6), new THREE.MeshBasicMaterial({color:0xff0000}));
+                    box.position.y = 2; this.group.add(box);
+                });
 
                 const spawnX = 0, spawnZ = -20;
                 this.group.position.set(spawnX, getTerrainHeight(spawnX, spawnZ), spawnZ);
                 this.scene.add(this.group);
 
-                this.speed = 7; this.patrolSpeed = 3;
+                this.speed = 9; this.patrolSpeed = 2;
                 this.direction = new THREE.Vector3();
                 this.targetNode = new THREE.Vector3();
-                this.state = 'PATROL'; 
+                this.aiState = 'PATROL'; 
                 this.pickNewTarget();
-                this.detectionRadius = 22;
+                this.detectionRadius = 25;
                 
                 this.raycaster = new THREE.Raycaster();
                 this.downVector = new THREE.Vector3(0, -1, 0);
@@ -482,22 +547,24 @@
 
             update(delta, time) {
                 if (this.player.state.isGameOver) return;
+                if (this.mixer) this.mixer.update(delta);
 
                 const distToPlayer = this.group.position.distanceTo(this.player.camera.position);
+                
+                // Lógica de esconderijo: Agachado E sem lanterna
                 const isPlayerHiding = this.player.isCrouching && !this.player.isFlashlightOn;
-                const canSeePlayer = distToPlayer < this.detectionRadius && !isPlayerHiding;
+                // O T-Rex vê mais longe durante o dia
+                const currentDetectionRadius = this.state.act === 3 ? 15 : this.detectionRadius; 
+                const canSeePlayer = distToPlayer < currentDetectionRadius && !isPlayerHiding;
 
-                if (canSeePlayer) this.state = 'CHASE';
-                else if (distToPlayer > this.detectionRadius * 1.5) this.state = 'PATROL';
+                if (canSeePlayer) this.aiState = 'CHASE';
+                else if (distToPlayer > currentDetectionRadius * 1.5) this.aiState = 'PATROL';
 
-                if (this.state === 'CHASE') {
+                if (this.aiState === 'CHASE') {
                     this.direction.subVectors(this.player.camera.position, this.group.position).setY(0).normalize();
                     this.group.position.addScaledVector(this.direction, this.speed * delta);
                     
-                    this.legs[0].rotation.x = Math.sin(time * 20) * 0.5;
-                    this.legs[1].rotation.x = Math.cos(time * 20) * 0.5;
-                    
-                    if (distToPlayer < 2.5) {
+                    if (distToPlayer < 4) { // T-Rex é maior, hitbox maior
                         this.player.state.isGameOver = true;
                         document.getElementById('game-over-screen').classList.remove('hidden');
                         document.exitPointerLock();
@@ -509,8 +576,6 @@
                     } else {
                         this.direction.normalize();
                         this.group.position.addScaledVector(this.direction, this.patrolSpeed * delta);
-                        this.legs[0].rotation.x = Math.sin(time * 8) * 0.3;
-                        this.legs[1].rotation.x = Math.cos(time * 8) * 0.3;
                     }
                 }
 
@@ -520,6 +585,7 @@
                     this.group.rotation.y = targetRotation;
                 }
 
+                // Cola no chão
                 this.raycaster.set(this.group.position.clone().setY(50), this.downVector);
                 const intersects = this.raycaster.intersectObjects(this.scene.children, true);
                 if (intersects.length > 0) this.group.position.y = intersects[0].point.y;
@@ -527,7 +593,7 @@
         }
 
         // ==========================================
-        // JOGADOR (FÍSICA E LANTERNA)
+        // JOGADOR (FÍSICA E INTERAÇÕES)
         // ==========================================
         class Player {
             constructor(camera, scene, collidables, gameState) {
@@ -541,19 +607,17 @@
                 this.playerBox = new THREE.Box3();
                 this.hitboxSize = new THREE.Vector3(1, 2, 1);
 
+                // Lanterna
                 this.flashlight = new THREE.SpotLight(0xffffff, 15, 45, Math.PI / 5, 0.4, 1.5);
                 this.flashlight.castShadow = true;
-                this.flashlight.shadow.mapSize.width = 1024;
-                this.flashlight.shadow.mapSize.height = 1024;
-                this.flashlight.shadow.bias = -0.001;
                 this.camera.add(this.flashlight);
-                
                 this.flashlightTarget = new THREE.Object3D();
                 this.scene.add(this.flashlightTarget);
                 this.flashlight.target = this.flashlightTarget;
 
                 this.battery = 100;
-                this.isFlashlightOn = true;
+                this.isFlashlightOn = false; // Começa desligada (é dia)
+                this.flashlight.visible = false;
                 this.batteryFill = document.getElementById('battery-fill');
 
                 this.raycaster = new THREE.Raycaster();
@@ -576,8 +640,7 @@
                     case 'KeyD': this.moveRight = true; break;
                     case 'ShiftLeft':
                         this.isCrouching = true;
-                        this.camera.position.y = 1;
-                        this.hitboxSize.y = 1;
+                        this.camera.position.y = 1; this.hitboxSize.y = 1;
                         break;
                     case 'KeyF':
                         if (this.battery > 0) {
@@ -596,8 +659,7 @@
                     case 'KeyD': this.moveRight = false; break;
                     case 'ShiftLeft':
                         this.isCrouching = false;
-                        this.camera.position.y = 2;
-                        this.hitboxSize.y = 2;
+                        this.camera.position.y = 2; this.hitboxSize.y = 2;
                         break;
                 }
             }
@@ -611,7 +673,7 @@
 
                 const dirZ = Number(this.moveForward) - Number(this.moveBackward);
                 const dirX = Number(this.moveRight) - Number(this.moveLeft);
-                const speed = this.isCrouching ? 12.0 : 30.0;
+                const speed = this.isCrouching ? 10.0 : 25.0;
 
                 this.velocity.z -= dirZ * speed * delta;
                 this.velocity.x -= dirX * speed * delta;
@@ -635,6 +697,7 @@
                     this.velocity.set(0, 0, 0);
                 }
 
+                // Colar no chão
                 this.raycaster.set(this.camera.position.clone().setY(this.camera.position.y + 5), this.downVector);
                 const intersects = this.raycaster.intersectObjects(this.scene.children, true);
                 if (intersects.length > 0) {
@@ -642,22 +705,19 @@
                     this.camera.position.y = groundY + (this.isCrouching ? 1 : 2);
                 }
 
+                // Lanterna
                 if (this.isFlashlightOn && this.battery > 0) {
                     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
                     const targetPos = this.camera.position.clone().add(forward.multiplyScalar(10));
                     
-                    targetPos.x += Math.sin(time * 8) * 0.3;
-                    targetPos.y += Math.cos(time * 6) * 0.3;
-                    
+                    targetPos.x += Math.sin(time * 8) * 0.3; targetPos.y += Math.cos(time * 6) * 0.3;
                     this.flashlightTarget.position.lerp(targetPos, 0.5);
                     
-                    this.battery -= 1.2 * delta;
+                    this.battery -= 1.0 * delta; // Consumo mais lento
                     this.batteryFill.style.width = `${Math.max(0, this.battery)}%`;
                     
                     if (this.battery <= 0) {
-                        this.battery = 0;
-                        this.isFlashlightOn = false;
-                        this.flashlight.visible = false;
+                        this.battery = 0; this.isFlashlightOn = false; this.flashlight.visible = false;
                         narrative.triggerRadio();
                     }
                 }
@@ -669,35 +729,28 @@
                 const prompt = document.getElementById('interaction-prompt');
                 let canInteract = false;
 
+                // Itens
                 for (let i = environment.collectibles.length - 1; i >= 0; i--) {
                     const item = environment.collectibles[i];
-                    const dist = this.camera.position.distanceTo(item.position);
-                    
-                    if (dist < 3) {
+                    if (this.camera.position.distanceTo(item.position) < 3) {
                         canInteract = true;
                         prompt.classList.remove('hidden');
                         
                         if (window.keys['KeyE']) {
-                            if (item.userData.type === 'datapad') {
-                                narrative.showDataPad(item.userData.id);
-                            } else if (item.userData.type === 'fuse') {
-                                this.state.hasFuse = true;
-                                narrative.updateHUD();
-                                narrative.triggerRadio();
+                            if (item.userData.type === 'datapad') narrative.showDataPad(item.userData.id);
+                            else if (item.userData.type === 'fuse') {
+                                this.state.hasFuse = true; narrative.updateHUD(); narrative.triggerRadio();
                             }
-                            environment.scene.remove(item);
-                            environment.collectibles.splice(i, 1);
-                            window.keys['KeyE'] = false;
-                            break;
+                            environment.scene.remove(item); environment.collectibles.splice(i, 1);
+                            window.keys['KeyE'] = false; break;
                         }
                     }
                 }
 
+                // Caixa de Fusível
                 if (this.camera.position.distanceTo(environment.fuseBoxPos) < 3.5) {
                     canInteract = true;
-                    prompt.classList.remove('hidden');
-                    prompt.innerText = "[E] Colocar Fusível";
-                    
+                    prompt.classList.remove('hidden'); prompt.innerText = "[E] Colocar Fusível";
                     if (window.keys['KeyE']) {
                         environment.interact(this.camera.position, narrative);
                         if (this.state.gateOpen && this.state.datapads === 5) {
@@ -709,6 +762,18 @@
                     }
                 }
 
+                // NPCs
+                environment.npcs.forEach(npc => {
+                    if (this.camera.position.distanceTo(npc.mesh.position) < 3.5) {
+                        canInteract = true;
+                        prompt.classList.remove('hidden'); prompt.innerText = "[E] Conversar";
+                        if (window.keys['KeyE']) {
+                            narrative.showDialogue(npc.name, npc.line);
+                            window.keys['KeyE'] = false;
+                        }
+                    }
+                });
+
                 if (!canInteract) prompt.classList.add('hidden');
             }
         }
@@ -718,72 +783,14 @@
         document.addEventListener('keyup', e => window.keys[e.code] = false);
 
         // ==========================================
-        // SISTEMA CLIMÁTICO
-        // ==========================================
-        class WeatherSystem {
-            constructor(scene) {
-                this.scene = scene;
-                this.rainCount = 3000;
-                this.rainGeo = new THREE.BufferGeometry();
-                this.rainPositions = new Float32Array(this.rainCount * 3);
-                this.rainVelocities = [];
-
-                for (let i = 0; i < this.rainCount; i++) {
-                    this.rainPositions[i * 3] = (Math.random() - 0.5) * 100;
-                    this.rainPositions[i * 3 + 1] = Math.random() * 50;
-                    this.rainPositions[i * 3 + 2] = (Math.random() - 0.5) * 100;
-                    this.rainVelocities.push(0.4 + Math.random() * 0.6);
-                }
-                this.rainGeo.setAttribute('position', new THREE.BufferAttribute(this.rainPositions, 3));
-                
-                const rainMat = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.2, transparent: true, opacity: 0.5 });
-                this.rain = new THREE.Points(this.rainGeo, rainMat);
-                this.scene.add(this.rain);
-
-                this.flashLight = new THREE.DirectionalLight(0xffffff, 0);
-                this.flashLight.castShadow = true;
-                this.scene.add(this.flashLight);
-                this.isLightning = false; this.timer = 0;
-            }
-
-            update(delta) {
-                const positions = this.rainGeo.attributes.position.array;
-                for (let i = 0; i < this.rainCount; i++) {
-                    positions[i * 3 + 1] -= this.rainVelocities[i] * delta * 60;
-                    if (positions[i * 3 + 1] < 0) {
-                        positions[i * 3 + 1] = 50;
-                        positions[i * 3] = (Math.random() - 0.5) * 100;
-                        positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
-                    }
-                }
-                this.rainGeo.attributes.position.needsUpdate = true;
-
-                this.timer -= delta;
-                if (this.timer <= 0 && !this.isLightning) {
-                    if (Math.random() > 0.97) {
-                        this.isLightning = true; this.flashLight.intensity = 10;
-                        this.scene.fog.density = 0.02; this.timer = 0.1;
-                    }
-                } else if (this.isLightning) {
-                    if (this.timer <= 0) {
-                        this.isLightning = false; this.flashLight.intensity = 0;
-                        this.scene.fog.density = 0.05; this.timer = 4 + Math.random() * 5;
-                    }
-                }
-            }
-        }
-
-        // ==========================================
         // LOOP PRINCIPAL
         // ==========================================
         class Game {
             constructor() {
                 this.container = document.getElementById('game-container');
                 this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0x0a110a);
-                this.scene.fog = new THREE.FogExp2(0x0a110a, 0.05);
-
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
+                
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 300);
                 this.camera.position.set(0, 2, 10);
 
                 this.renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -800,14 +807,13 @@
             }
 
             init() {
-                const ambientLight = new THREE.HemisphereLight(0x334433, 0x000000, 0.4);
-                this.scene.add(ambientLight);
-
                 this.narrative = new NarrativeManager(this.gameState);
-                this.weather = new WeatherSystem(this.scene);
                 this.environment = new Environment(this.scene, this.gameState, this.narrative);
                 this.player = new Player(this.camera, this.scene, this.environment.collidables, this.gameState);
                 this.enemy = new EnemyAI(this.scene, this.player, this.gameState);
+
+                // Inicializa a luz do Ato 1
+                this.environment.updateLighting();
 
                 document.getElementById('start-btn').addEventListener('click', () => {
                     document.getElementById('start-screen').style.display = 'none';
@@ -834,8 +840,10 @@
                 if (!this.gameState.isGameOver && !this.gameState.isWin) {
                     this.player.update(delta, time, this.environment, this.narrative);
                     this.enemy.update(delta, time);
-                    this.weather.update(delta);
                     this.environment.update(time);
+                    
+                    // Atualiza a iluminação caso o tempo tenha mudado (Lore Pads coletados)
+                    this.environment.updateLighting();
                 }
 
                 this.renderer.render(this.scene, this.camera);
