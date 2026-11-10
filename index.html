@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurassic Park: Biosyn Protocol - Definitive</title>
+    <title>Jurassic Park: Biosyn Protocol - Ultimate Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
@@ -16,7 +16,7 @@
 
         /* MENU */
         .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: flex; background-color: transparent; transition: opacity 0.5s ease; }
-        .menu-left { width: 45%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw; clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%); }
+        .menu-left { width: 45%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw; clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%); }
         .menu-right { width: 55%; height: 100%; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 40px; background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 100%); }
         .logo-container { margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; width: 220px; }
         .logo-circle { width: 140px; height: 140px; border-radius: 50%; background-color: #cc0000; border: 4px solid #111; box-shadow: inset 0 0 20px #000; display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: -20px; z-index: 1; }
@@ -30,7 +30,7 @@
 
         /* HUD E MINI-MAPA */
         #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; font-family: 'VT323', monospace; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
-        #minimap { position: absolute; top: 20px; left: 20px; border: 2px solid #00ff00; background: rgba(0,0,0,0.7); border-radius: 50%; box-shadow: 0 0 10px rgba(0,255,0,0.5); }
+        #minimap { position: absolute; top: 20px; left: 20px; border: 2px solid #00ff00; background: rgba(0, 20, 0, 0.8); border-radius: 50%; box-shadow: 0 0 10px rgba(0,255,0,0.5); }
         
         #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: rgba(255,255,255,0.4); }
         #interaction-prompt { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00; font-size: 20px; }
@@ -45,13 +45,14 @@
         #danger-alert { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #ff0000; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px red; animation: flash 0.5s infinite alternate; }
         @keyframes flash { from { opacity: 0.3; } to { opacity: 1; } }
 
-        /* PAUSE / MODALS */
-        #pause-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 40; }
+        /* MODALS E PAUSE */
+        #pause-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 40; }
         #pause-menu button { margin: 10px; padding: 10px 40px; font-size: 24px; background: transparent; border: 2px solid #fff; color: #fff; cursor: pointer; font-family: 'Oswald'; }
+        #pause-menu button:hover { background: #fff; color: #000; }
         #ui-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 2px solid #00ff00; padding: 30px; width: 400px; pointer-events: auto; text-align: center; z-index: 45; font-family: 'VT323', monospace; }
         #ui-modal button { background: #00ff00; color: #000; border: none; padding: 10px 20px; font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px; }
         
-        /* CINEMÁTICA */
+        /* CINEMÁTICA E TELAS */
         .letterbox { position: absolute; left: 0; width: 100%; height: 12vh; background: #000; z-index: 30; transition: transform 1s ease; }
         #letterbox-top { top: 0; transform: translateY(-100%); }
         #letterbox-bottom { bottom: 0; transform: translateY(100%); }
@@ -82,6 +83,7 @@
                 <li id="btn-start">INICIAR EPISÓDIO</li>
                 <li id="btn-quit">SAIR</li>
             </ul>
+            <p style="margin-top: 30px; color: #888; font-size: 14px;">Controles: WASD (Mover) | Shift (Correr) | C (Agachar) | F (Lanterna) | E (Interagir)</p>
         </div>
         <div class="menu-right">
             <h1 style="font-family: 'Oswald'; font-size: 32px; text-shadow: 2px 2px 4px #000;">EPISODE 1: THE INTRUDER</h1>
@@ -113,6 +115,7 @@
 
     <div id="pause-menu" class="hidden">
         <h1 style="font-family: 'Cinzel'; color: #ffcc00; margin-bottom: 20px;">PAUSADO</h1>
+        <p style="color: #aaa; margin-bottom: 20px;">O jogo pausou porque você saiu da janela.</p>
         <button id="btn-resume">CONTINUAR</button>
         <button id="btn-exit">SAIR PARA O MENU</button>
     </div>
@@ -131,7 +134,7 @@
 
     <div id="win-screen" class="screen hidden">
         <h1>EXTRAÇÃO BEM-SUCEDIDA</h1>
-        <p>Você recuperou os dados e fugiu de Isla Nublar.</p>
+        <p>Você fugiu de Isla Nublar com os dados da InGen.</p>
         <button onclick="location.reload()">JOGAR NOVAMENTE</button>
     </div>
 
@@ -156,7 +159,7 @@
             constructor() {
                 this.datapads = 0; this.isGameOver = false; this.isWin = false;
                 this.isPaused = false; this.isCinematic = false; this.isMenuActive = true;
-                this.act = 1; // 1: Tarde, 2: Entardecer, 3: Noite
+                this.act = 1;
             }
         }
 
@@ -171,70 +174,35 @@
 
             draw(playerPos, playerRotation, entities, items, shipPos) {
                 this.ctx.clearRect(0, 0, 200, 200);
-                
-                // Fundo do radar
-                this.ctx.fillStyle = 'rgba(0, 50, 0, 0.5)';
-                this.ctx.beginPath();
-                this.ctx.arc(100, 100, 95, 0, Math.PI * 2);
-                this.ctx.fill();
+                this.ctx.fillStyle = 'rgba(0, 30, 0, 0.7)'; this.ctx.beginPath(); this.ctx.arc(100, 100, 95, 0, Math.PI * 2); this.ctx.fill();
+                this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)'; this.ctx.beginPath(); this.ctx.moveTo(100, 0); this.ctx.lineTo(100, 200); this.ctx.moveTo(0, 100); this.ctx.lineTo(200, 100); this.ctx.stroke();
 
-                // Grade
-                this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)';
-                this.ctx.beginPath();
-                this.ctx.moveTo(100, 0); this.ctx.lineTo(100, 200);
-                this.ctx.moveTo(0, 100); this.ctx.lineTo(200, 100);
-                this.ctx.stroke();
-
-                const mapScale = 0.6; // Ajuste para caber o mapa no radar
-
-                // Desenhar Navio (Objetivo)
+                const mapScale = 0.6;
                 this.drawPoint(shipPos, 'blue', 6, mapScale);
-
-                // Desenhar Itens
                 items.forEach(item => this.drawPoint(item.position, 'lime', 3, mapScale));
-
-                // Desenhar Inimigos
                 entities.forEach(ent => {
                     if(ent.group && ent.group.parent) {
                         this.drawPoint(ent.group.position, 'red', ent.constructor.name === 'TRexAI' ? 6 : 4, mapScale);
                     }
                 });
 
-                // Desenhar Jogador (Seta)
                 this.ctx.save();
-                this.ctx.translate(100, 100); // Centro do radar
-                this.ctx.rotate(-playerRotation); // Rotaciona a seta
-                
+                this.ctx.translate(100, 100);
+                this.ctx.rotate(-playerRotation);
                 this.ctx.fillStyle = '#fff';
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, -8);   // Ponta
-                this.ctx.lineTo(5, 8);    // Base Direita
-                this.ctx.lineTo(-5, 8);   // Base Esquerda
-                this.ctx.closePath();
-                this.ctx.fill();
+                this.ctx.beginPath(); this.ctx.moveTo(0, -8); this.ctx.lineTo(5, 8); this.ctx.lineTo(-5, 8); this.ctx.closePath(); this.ctx.fill();
                 this.ctx.restore();
             }
 
             drawPoint(pos, color, size, scale) {
-                // Limita a posição no mapa
-                let x = pos.x * scale;
-                let z = pos.z * scale;
-                if(x > 90) x = 90; if(x < -90) x = -90;
-                if(z > 90) z = 90; if(z < -90) z = -90;
-
-                // Mapeia para o canvas (centro é 100,100)
-                const cx = 100 + x;
-                const cy = 100 + z;
-
-                this.ctx.fillStyle = color;
-                this.ctx.beginPath();
-                this.ctx.arc(cx, cy, size, 0, Math.PI * 2);
-                this.ctx.fill();
+                let x = Math.max(-90, Math.min(90, pos.x * scale));
+                let z = Math.max(-90, Math.min(90, pos.z * scale));
+                this.ctx.fillStyle = color; this.ctx.beginPath(); this.ctx.arc(100 + x, 100 + z, size, 0, Math.PI * 2); this.ctx.fill();
             }
         }
 
         // ==========================================
-        // AMBIENTE (MAPA)
+        // AMBIENTE
         // ==========================================
         class Environment {
             constructor(scene, state, narrative) {
@@ -251,7 +219,12 @@
                 this.scene.fog = new THREE.FogExp2(0x87CEEB, 0.02);
 
                 this.buildTerrain();
-                this.buildZones();
+                this.buildJungle(); 
+                this.buildZone1_Volcano();
+                this.buildZone2_Canyons();
+                this.buildZone3_VisitorCenter();
+                this.buildZone4_Lagoon();
+                this.buildMonorail();
                 this.buildItems();
             }
 
@@ -261,98 +234,164 @@
                 for (let i = 0; i < pos.count; i++) {
                     const x = pos.getX(i); const y = pos.getY(i);
                     let z = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 2;
-                    if (x > 50 && y < -50) z -= 10; // Abismo Zona 4
+                    if (x > 80 && y < -80) z -= 8; 
                     pos.setZ(i, z);
                 }
                 geo.computeVertexNormals();
-                const mat = new THREE.MeshStandardMaterial({ color: 0x2e4a25, roughness: 1, flatShading: true });
+                const mat = new THREE.MeshStandardMaterial({ color: 0x2a3d1c, roughness: 1, flatShading: true });
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.rotation.x = -Math.PI / 2; mesh.receiveShadow = true;
                 this.scene.add(mesh);
             }
 
-            buildZones() {
-                // Zona 1: Vulcão
-                const volcano = new THREE.Mesh(new THREE.ConeGeometry(60, 50, 16), new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true }));
-                volcano.position.set(0, 0, -150); this.scene.add(volcano);
+            buildJungle() {
+                const treeTrunkGeo = new THREE.CylinderGeometry(0.5, 1, 8, 5);
+                const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, flatShading: true });
+                const treeLeavesGeo = new THREE.ConeGeometry(4, 10, 5);
+                const treeLeavesMat = new THREE.MeshStandardMaterial({ color: 0x1a3a10, flatShading: true });
 
-                // Zona 2: Cânions
+                const numTrees = 600;
+                const trunks = new THREE.InstancedMesh(treeTrunkGeo, treeTrunkMat, numTrees);
+                const leaves = new THREE.InstancedMesh(treeLeavesGeo, treeLeavesMat, numTrees);
+                
+                const dummy = new THREE.Object3D();
+                let spawned = 0;
+
+                for (let i = 0; i < numTrees; i++) {
+                    const x = (Math.random() - 0.5) * 350;
+                    const z = (Math.random() - 0.5) * 350;
+                    
+                    let isInsideStructure = false;
+                    if (Math.abs(x) < 35 && Math.abs(z - 20) < 35) isInsideStructure = true; 
+                    if (Math.abs(x) < 15 && z < -100) isInsideStructure = true; 
+                    if (x < -60 && Math.abs(z) < 50) isInsideStructure = true; 
+                    if (x > 80 && z > 80) isInsideStructure = true; 
+                    if (Math.abs(x - 30) < 10 && Math.abs(z) < 150) isInsideStructure = true; 
+                    
+                    if (isInsideStructure) continue;
+
+                    const y = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 2;
+                    const scale = 0.8 + Math.random() * 1.5;
+
+                    dummy.position.set(x, y + 4 * scale, z);
+                    dummy.scale.set(scale, scale, scale);
+                    dummy.rotation.y = Math.random() * Math.PI;
+                    dummy.updateMatrix();
+                    trunks.setMatrixAt(spawned, dummy.matrix);
+
+                    dummy.position.set(x, y + 10 * scale, z);
+                    dummy.updateMatrix();
+                    leaves.setMatrixAt(spawned, dummy.matrix);
+                    spawned++;
+                }
+                this.scene.add(trunks); this.scene.add(leaves);
+            }
+
+            buildZone1_Volcano() {
+                const volcano = new THREE.Mesh(new THREE.ConeGeometry(50, 60, 16), new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true }));
+                volcano.position.set(0, 0, -150); this.scene.add(volcano);
+                this.collidables.push(new THREE.Box3().setFromObject(volcano));
+            }
+
+            buildZone2_Canyons() {
                 const wallMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true });
-                for (let i = 0; i < 6; i++) {
+                for (let i = 0; i < 5; i++) {
                     const wall = new THREE.Mesh(new THREE.BoxGeometry(20, 30, 80), wallMat);
                     wall.position.set(-100 + (i * 25), 10, 0); wall.castShadow = true;
                     this.scene.add(wall);
                     this.collidables.push(new THREE.Box3().setFromObject(wall));
                 }
+            }
 
-                // Zona 3: Centro de Visitantes
+            buildZone3_VisitorCenter() {
                 const center = new THREE.Group();
-                const mainBuild = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 15), new THREE.MeshStandardMaterial({ color: 0xccbbaa }));
-                mainBuild.position.y = 5; center.add(mainBuild);
-                const roof = new THREE.Mesh(new THREE.ConeGeometry(18, 8, 4), new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true }));
-                roof.position.y = 14; roof.rotation.y = Math.PI/4; center.add(roof);
-                center.position.set(0, 0, 50); this.scene.add(center);
+                const mainBuild = new THREE.Mesh(new THREE.CylinderGeometry(15, 15, 8, 12), new THREE.MeshStandardMaterial({ color: 0xccbbaa }));
+                mainBuild.position.y = 4; center.add(mainBuild);
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(18, 8, 12), new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true }));
+                roof.position.y = 12; center.add(roof);
+                center.position.set(0, 0, 20); this.scene.add(center);
                 this.collidables.push(new THREE.Box3().setFromObject(mainBuild));
+            }
 
-                // Zona 4: Lagoa e Navio
+            buildZone4_Lagoon() {
                 const water = new THREE.Mesh(new THREE.PlaneGeometry(150, 150), new THREE.MeshStandardMaterial({ color: 0x0a1128 }));
-                water.rotation.x = -Math.PI / 2; water.position.set(120, -2, 120); this.scene.add(water);
-                const ship = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 40), new THREE.MeshStandardMaterial({ color: 0x222222 }));
-                ship.position.set(120, 3, 160); this.scene.add(ship);
+                water.rotation.x = -Math.PI / 2; water.position.set(120, -3, 120); this.scene.add(water);
+
+                const ship = new THREE.Mesh(new THREE.BoxGeometry(20, 15, 50), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+                ship.position.set(120, 5, 160); this.scene.add(ship);
                 this.shipPos = ship.position.clone();
+            }
+
+            buildMonorail() {
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0x999999 });
+                for (let z = -150; z <= 150; z += 30) {
+                    const pillar = new THREE.Mesh(new THREE.BoxGeometry(2, 15, 2), pillarMat);
+                    pillar.position.set(30, 7.5, z); this.scene.add(pillar);
+                }
+                const track = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 300), new THREE.MeshStandardMaterial({ color: 0xdddddd }));
+                track.position.set(30, 15, 0); this.scene.add(track);
             }
 
             buildItems() {
                 const padGeo = new THREE.BoxGeometry(0.4, 0.5, 0.1);
                 const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
                 const padPositions = [
-                    new THREE.Vector3(0, 1, 50),     // Zona 3
-                    new THREE.Vector3(-90, 1, 0),    // Zona 2
-                    new THREE.Vector3(0, 1, -130),   // Zona 1
-                    new THREE.Vector3(100, 1, 100),  // Zona 4
-                    new THREE.Vector3(30, 1, 0)      // Meio
+                    new THREE.Vector3(0, 1, 20),
+                    new THREE.Vector3(0, 1, -75),
+                    new THREE.Vector3(-80, 1, 0),
+                    new THREE.Vector3(100, 1, 100),
+                    new THREE.Vector3(50, 1, -50)
                 ];
 
                 padPositions.forEach((pos, i) => {
                     const pad = new THREE.Mesh(padGeo, padMat);
                     pad.position.copy(pos);
-                    pad.userData = { type: 'datapad', id: i+1 };
+                    pad.userData = { type: 'datapad', id: i+1, text: this.getLore(i) };
                     this.scene.add(pad); this.collectibles.push(pad);
                 });
             }
 
+            getLore(id) {
+                const lore = [
+                    "LOG 1: O sistema de segurança principal caiu. O T-Rex está solto na Ilha Norte.",
+                    "LOG 2: O Raptor fêmea Alpha está caçando nos Cânions. Ela ataca pelo som.",
+                    "LOG 3: O Centro de Visitantes foi abandonado. A energia do portão está desligada.",
+                    "LOG 4: Há um navio cargueiro atracado no East Dock. É a única saída.",
+                    "LOG 5: Se você está lendo isso, leve os dados para a Biosyn e não olhe para trás."
+                ];
+                return lore[id] || "Dados corrompidos.";
+            }
+
             updateLighting() {
                 if (this.state.act === 1) {
-                    this.scene.background = new THREE.Color(0x87CEEB); this.scene.fog.color.setHex(0x87CEEB); this.scene.fog.density = 0.01;
+                    this.scene.background = new THREE.Color(0x87CEEB); this.scene.fog.color.setHex(0x87CEEB); this.scene.fog.density = 0.02;
                     this.sunLight.color.setHex(0xffffee); this.sunLight.intensity = 2;
                 } else if (this.state.act === 2) {
-                    this.scene.background = new THREE.Color(0xff8c00); this.scene.fog.color.setHex(0xff8c00); this.scene.fog.density = 0.02;
+                    this.scene.background = new THREE.Color(0xff8c00); this.scene.fog.color.setHex(0xff8c00); this.scene.fog.density = 0.03;
                     this.sunLight.color.setHex(0xffaa00); this.sunLight.intensity = 1;
                 } else {
-                    this.scene.background = new THREE.Color(0x050510); this.scene.fog.color.setHex(0x050510); this.scene.fog.density = 0.04;
+                    this.scene.background = new THREE.Color(0x050510); this.scene.fog.color.setHex(0x050510); this.scene.fog.density = 0.05;
                     this.sunLight.color.setHex(0x334466); this.sunLight.intensity = 0.2;
                 }
             }
         }
 
         // ==========================================
-        // JOGADOR COM CORPO FPS
+        // JOGADOR (CORREÇÃO DO WASD E CONTROLES)
         // ==========================================
         class Player {
             constructor(camera, scene, collidables, state) {
                 this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = state;
                 this.controls = new PointerLockControls(camera, document.body);
                 
-                // Vetores de movimento (Física)
-                this.velocity = new THREE.Vector3();
-                this.direction = new THREE.Vector3();
+                // Variáveis de Estado de Movimento
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isCrouching = false; this.isSprinting = false; this.isMoving = false;
                 this.bobTimer = 0;
+                this.baseY = 2.0;
                 
                 this.playerBox = new THREE.Box3(); this.hitboxSize = new THREE.Vector3(1,2,1);
 
-                // Lanterna
                 this.flashlight = new THREE.SpotLight(0xffffff, 15, 45, Math.PI / 5, 0.4, 1.5);
                 this.flashlight.castShadow = true; this.camera.add(this.flashlight);
                 this.flashlightTarget = new THREE.Object3D(); this.scene.add(this.flashlightTarget);
@@ -361,40 +400,30 @@
                 this.battery = 100; this.isFlashlightOn = false;
                 this.batteryFill = document.getElementById('battery-fill');
 
-                // MODELO DO CORPO (Primeira Pessoa)
+                // MODELO DO CORPO
                 this.bodyGroup = new THREE.Group();
                 const skinMat = new THREE.MeshStandardMaterial({ color: 0xd2a679 });
-                const gloveMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-                
-                // Braço Direito (Lanterna)
-                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), skinMat);
-                armR.position.set(0.4, -0.5, -0.5); armR.rotation.x = -0.5;
-                this.bodyGroup.add(armR);
-                const flashlightMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 0.4), new THREE.MeshStandardMaterial({ color: 0x888888 }));
-                flashlightMesh.position.set(0, -0.2, -0.2); flashlightMesh.rotation.x = Math.PI/2;
-                armR.add(flashlightMesh);
-
-                // Braço Esquerdo
-                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), skinMat);
-                armL.position.set(-0.4, -0.5, -0.5); armL.rotation.x = -0.5;
-                this.bodyGroup.add(armL);
-
-                this.camera.add(this.bodyGroup);
-                this.bodyGroup.position.y = 0.2; // Ajuste para aparecer na tela
+                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), skinMat); armR.position.set(0.4, -0.5, -0.5); armR.rotation.x = -0.5;
+                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), skinMat); armL.position.set(-0.4, -0.5, -0.5); armL.rotation.x = -0.5;
+                this.bodyGroup.add(armR); this.bodyGroup.add(armL);
+                this.camera.add(this.bodyGroup); this.bodyGroup.position.y = 0.2;
 
                 document.addEventListener('keydown', e => this.onKeyDown(e));
                 document.addEventListener('keyup', e => this.onKeyUp(e));
             }
 
+            // Bloqueia Ctrl, Alt, etc., que causam bugs no navegador
             onKeyDown(e) {
+                if (e.ctrlKey || e.altKey) return;
                 if (this.state.isGameOver || this.state.isWin || this.state.isCinematic || this.state.isPaused || this.state.isMenuActive) return;
+                
                 switch (e.code) {
                     case 'KeyW': this.moveF = true; break;
                     case 'KeyS': this.moveB = true; break;
                     case 'KeyA': this.moveL = true; break;
                     case 'KeyD': this.moveR = true; break;
                     case 'ShiftLeft': this.isSprinting = true; break;
-                    case 'ControlLeft': case 'KeyC': this.isCrouching = true; this.camera.position.y = 1; this.hitboxSize.y = 1; break;
+                    case 'KeyC': this.isCrouching = true; this.baseY = 1.0; break; // Tecla C para agachar
                     case 'KeyF': if(this.battery > 0) { this.isFlashlightOn = !this.isFlashlightOn; this.flashlight.visible = this.isFlashlightOn; } break;
                     case 'Escape': if(!this.state.isCinematic) { document.getElementById('pause-menu').classList.remove('hidden'); this.state.isPaused = true; document.exitPointerLock(); } break;
                 }
@@ -407,58 +436,54 @@
                     case 'KeyA': this.moveL = false; break;
                     case 'KeyD': this.moveR = false; break;
                     case 'ShiftLeft': this.isSprinting = false; break;
-                    case 'ControlLeft': case 'KeyC': this.isCrouching = false; this.camera.position.y = 2; this.hitboxSize.y = 2; break;
+                    case 'KeyC': this.isCrouching = false; this.baseY = 2.0; break;
                 }
+            }
+
+            // Função que reseta o jogador quando o jogo pausa (para não bugar teclas)
+            resetControls() {
+                this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
+                this.isSprinting = false; this.isCrouching = false;
+                this.baseY = 2.0;
+                this.camera.position.y = this.baseY;
             }
 
             update(delta, time, env, narrative) {
                 if (!this.controls.isLocked || this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
 
-                // Lógica de Movimento (Física)
-                this.velocity.x -= this.velocity.x * 10.0 * delta;
-                this.velocity.z -= this.velocity.z * 10.0 * delta;
+                // LÓGICA DE MOVIMENTO DIRETA (Corrige o bug de não andar)
+                let speed = 15.0;
+                if (this.isSprinting && !this.isCrouching) speed = 30.0;
+                if (this.isCrouching) speed = 8.0;
 
-                this.direction.z = Number(this.moveF) - Number(this.moveB);
-                this.direction.x = Number(this.moveR) - Number(this.moveL);
-                this.direction.normalize();
+                const moveDistance = speed * delta;
+                const oldPos = this.camera.position.clone();
 
-                let speed = 30.0;
-                if (this.isSprinting && !this.isCrouching) speed = 50.0;
-                if (this.isCrouching) speed = 10.0;
+                if (this.moveF) this.controls.moveForward(moveDistance);
+                if (this.moveB) this.controls.moveForward(-moveDistance);
+                if (this.moveL) this.controls.moveRight(-moveDistance);
+                if (this.moveR) this.controls.moveRight(moveDistance);
 
                 this.isMoving = this.moveF || this.moveB || this.moveL || this.moveR;
-
-                if (this.moveF || this.moveB) this.velocity.z -= this.direction.z * speed * delta;
-                if (this.moveL || this.moveR) this.velocity.x -= this.direction.x * speed * delta;
-
-                // Aplica o movimento usando a direção da câmera (Corrige o bug do WASD)
-                const oldPos = this.camera.position.clone();
-                this.controls.moveRight(-this.velocity.x * delta);
-                this.controls.moveForward(-this.velocity.z * delta);
 
                 // Colisão AABB
                 this.playerBox.setFromCenterAndSize(new THREE.Vector3(this.camera.position.x, this.camera.position.y - 1, this.camera.position.z), this.hitboxSize);
                 let collision = false;
                 this.collidables.forEach(box => { if (this.playerBox.intersectsBox(box)) collision = true; });
-                if (collision) { this.camera.position.copy(oldPos); this.velocity.set(0,0,0); }
+                if (collision) { 
+                    this.camera.position.copy(oldPos); 
+                }
 
-                // Colar no chão (Simples)
-                this.camera.position.y = this.isCrouching ? 1 : 2;
-
-                // Animação do Corpo (Headbob e Braços)
+                // Headbob e Altura da Câmera
                 if (this.isMoving) {
                     const bobSpeed = this.isSprinting ? 20 : 10;
                     this.bobTimer += delta * bobSpeed;
-                    
-                    // Headbob (Câmera balançando)
-                    this.camera.position.y += Math.sin(this.bobTimer) * 0.05;
-                    
-                    // Braços balançando
+                    this.camera.position.y = this.baseY + Math.sin(this.bobTimer) * 0.05;
                     this.bodyGroup.children[0].rotation.x = -0.5 + Math.sin(this.bobTimer) * 0.1;
                     this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.1;
                 } else {
-                    // Idle (Respiração)
                     this.bobTimer += delta * 2;
+                    this.camera.position.y = this.baseY + Math.sin(this.bobTimer) * 0.02;
                     this.bodyGroup.children[0].rotation.x = -0.5 + Math.sin(this.bobTimer) * 0.02;
                     this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.02;
                 }
@@ -487,15 +512,16 @@
                     const item = env.collectibles[i];
                     if (this.camera.position.distanceTo(item.position) < 4) {
                         canInteract = true; prompt.classList.remove('hidden');
+                        prompt.innerText = "[E] Examinar Dados";
                         if (window.keys['KeyE']) {
-                            narrative.showDataPad(item.userData.id);
+                            narrative.showModal("LOG DE DADOS", item.userData.text);
                             env.scene.remove(item); env.collectibles.splice(i, 1);
                             window.keys['KeyE'] = false; break;
                         }
                     }
                 }
 
-                if (this.camera.position.distanceTo(env.shipPos) < 15) {
+                if (this.camera.position.distanceTo(env.shipPos) < 20) {
                     canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Embarcar e Escapar";
                     if (window.keys['KeyE']) {
                         if (this.state.datapads >= 5) {
@@ -525,7 +551,6 @@
                 
                 this.group.position.copy(spawnPos);
                 this.pickNewTarget();
-                this.raycaster = new THREE.Raycaster(); this.downVector = new THREE.Vector3(0,-1,0);
 
                 const loader = new GLTFLoader();
                 loader.load(url, (gltf) => {
@@ -557,7 +582,6 @@
                 const dist = this.group.position.distanceTo(this.player.camera.position);
                 const isHiding = this.player.isCrouching && !this.player.isFlashlightOn;
                 
-                // Se o jogador estiver correndo, o Raptor ouve de mais longe
                 let currentVision = isHiding ? 0 : this.vision;
                 if (this.player.isSprinting) currentVision *= 1.5;
 
@@ -594,14 +618,12 @@
                 if (this.direction.length() > 0) {
                     this.group.rotation.y = Math.atan2(this.direction.x, this.direction.z);
                 }
-
-                // Colar no chão
                 this.group.position.y = 0; 
             }
         }
         
         class RaptorAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './archie_the_velociraptor.glb', 1.0, 9, 18, new THREE.Vector3(-90, 0, 0)); } }
-        class TRexAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './t_rex.glb', 1.5, 7, 30, new THREE.Vector3(0, 0, 80)); } }
+        class TRexAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './t_rex.glb', 1.5, 7, 30, new THREE.Vector3(0, 0, -100)); } }
 
         // ==========================================
         // NARRATIVA
@@ -619,29 +641,14 @@
                 if(this.state.act === 3) this.actIndicator.innerText = "ATO III - NOITE";
             }
             triggerRadio(txt) { this.radioText.innerText = txt; setTimeout(() => this.radioText.innerText = "", 6000); }
-            showDataPad(id) {
-                if(this.state.datapads >= 5) return;
+            showModal(title, text) {
+                this.modalUI.querySelector('#modal-title').innerText = title;
+                this.modalUI.querySelector('#modal-text').innerText = text;
+                this.modalUI.classList.remove('hidden'); document.exitPointerLock();
                 this.state.datapads++; this.updateHUD();
                 
-                const lore = [
-                    "LOG 1: O sistema de segurança principal caiu. O T-Rex está solto na Ilha Norte.",
-                    "LOG 2: O Raptor fêmea Alpha está caçando nos Cânions. Ela ataca pelo som.",
-                    "LOG 3: O Centro de Visitantes foi abandonado. A energia do portão está desligada.",
-                    "LOG 4: Há um navio cargueiro atracado no East Dock. É a única saída.",
-                    "LOG 5: Se você está lendo isso, leve os dados para a Biosyn e não olhe para trás."
-                ];
-                
-                this.modalUI.querySelector('#modal-text').innerText = lore[id - 1];
-                this.modalUI.classList.remove('hidden'); document.exitPointerLock();
-                
-                if(this.state.datapads === 2) { 
-                    this.state.act = 2; this.updateHUD(); 
-                    this.triggerRadio("O sol está se pondo. Sensores detectaram o Raptor na área."); 
-                }
-                if(this.state.datapads === 4) { 
-                    this.state.act = 3; this.updateHUD(); 
-                    this.triggerRadio("A noite chegou. O T-Rex está solto. Ele vê movimento."); 
-                }
+                if(this.state.datapads === 2) { this.state.act = 2; this.updateHUD(); this.triggerRadio("O sol está se pondo. Sensores detectaram o Raptor nos Cânions."); }
+                if(this.state.datapads === 4) { this.state.act = 3; this.updateHUD(); this.triggerRadio("A noite chegou. O T-Rex está solto perto do Vulcão."); }
             }
         }
 
@@ -656,7 +663,7 @@
             constructor() {
                 this.scene = new THREE.Scene();
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 300);
-                this.camera.position.set(30, 50, 80); // Câmera do Menu
+                this.camera.position.set(30, 50, 80);
 
                 this.renderer = new THREE.WebGLRenderer({ antialias: false });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -675,13 +682,45 @@
                 
                 this.menuAngle = 0;
                 this.initUI();
+                this.setupPauseHandling(); 
                 this.animate();
+            }
+
+            setupPauseHandling() {
+                document.addEventListener("visibilitychange", () => {
+                    if (document.hidden && !this.state.isMenuActive && !this.state.isPaused) {
+                        this.pauseGame();
+                    }
+                });
+                window.addEventListener("blur", () => {
+                    if (!this.state.isMenuActive && !this.state.isPaused) {
+                        this.pauseGame();
+                    }
+                });
+            }
+
+            pauseGame() {
+                this.state.isPaused = true;
+                document.getElementById('pause-menu').classList.remove('hidden');
+                document.exitPointerLock();
+                
+                // Limpa o buffer de tempo e reseta as teclas para não travar o jogador
+                this.clock.getDelta(); 
+                window.keys = {};
+                this.player.resetControls();
             }
 
             initUI() {
                 document.getElementById('btn-start').onclick = () => this.startGame();
                 document.getElementById('btn-quit').onclick = () => { if(confirm("Deseja realmente sair?")) window.close(); };
-                document.getElementById('btn-resume').onclick = () => { document.getElementById('pause-menu').classList.add('hidden'); this.state.isPaused = false; document.getElementById('game-container').requestPointerLock(); };
+                
+                document.getElementById('btn-resume').onclick = () => { 
+                    document.getElementById('pause-menu').classList.add('hidden'); 
+                    this.state.isPaused = false; 
+                    this.clock.getDelta(); // Reseta tempo
+                    this.player.controls.lock(); // Aciona o mouse lock
+                };
+                
                 document.getElementById('btn-exit').onclick = () => location.reload();
 
                 window.addEventListener('resize', () => {
@@ -693,7 +732,6 @@
 
             startGame() {
                 if (!this.state.isMenuActive) return;
-                
                 const menu = document.getElementById('main-menu');
                 menu.style.opacity = '0';
                 
@@ -702,12 +740,12 @@
                     document.getElementById('hud').classList.remove('hidden');
                     
                     this.state.isMenuActive = false;
-                    this.camera.position.set(0, 2, 30); // Spawn na Zona 3
+                    this.camera.position.set(0, 2, 20); 
                     
                     this.state.isCinematic = true;
                     document.body.classList.add('cinematic-active');
                     document.getElementById('subtitle').classList.remove('hidden');
-                    document.getElementById('subtitle').innerText = "Encontre os 5 Data Pads. Chegue ao Navio no Sudeste. Não seja devorado.";
+                    document.getElementById('subtitle').innerText = "Explore as 4 Zonas. Encontre os 5 Data Pads. Chegue ao Navio no Sudeste.";
                     
                     setTimeout(() => {
                         document.body.classList.remove('cinematic-active');
@@ -742,7 +780,6 @@
                     this.player.update(delta, time, this.environment, this.narrative);
                     this.environment.updateLighting();
 
-                    // Spawns dos Dinos baseados no Ato
                     if (this.state.act >= 2 && !this.raptor) this.raptor = new RaptorAI(this.scene, this.player, this.state);
                     if (this.state.act === 3 && !this.trex) this.trex = new TRexAI(this.scene, this.player, this.state);
 
@@ -756,15 +793,13 @@
                         }
                     }
 
-                    // Atualiza Minimap
                     const enemies = [this.raptor, this.trex].filter(e => e !== null);
                     this.minimap.draw(this.camera.position, this.camera.rotation.y, enemies, this.environment.collectibles, this.environment.shipPos);
 
-                    // Atualiza HUD Zona
                     let zoneName = "Centro (Visitantes)";
                     if (this.camera.position.z < -50) zoneName = "Norte (Vulcão)";
                     else if (this.camera.position.x < -50) zoneName = "Oeste (Cânions)";
-                    else if (this.camera.position.x > 50 && this.camera.position.z > 50) zoneName = "Sudeste (Docas)";
+                    else if (this.camera.position.x > 80) zoneName = "Sudeste (Lagoa)";
                     document.getElementById('obj-zone').innerText = `Zona: ${zoneName}`;
                 }
                 this.renderer.render(this.scene, this.camera);
