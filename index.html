@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurassic Park: Biosyn Protocol - Massive Map</title>
+    <title>Jurassic Park: Biosyn Protocol - Terrain Fix</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
@@ -171,7 +171,7 @@
         }
 
         // ==========================================
-        // MINI-MAPA (Escala Ajustada para 2000x2000)
+        // MINI-MAPA
         // ==========================================
         class Minimap {
             constructor(canvasId) {
@@ -184,7 +184,7 @@
                 this.ctx.fillStyle = 'rgba(0, 30, 0, 0.7)'; this.ctx.beginPath(); this.ctx.arc(100, 100, 95, 0, Math.PI * 2); this.ctx.fill();
                 this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)'; this.ctx.beginPath(); this.ctx.moveTo(100, 0); this.ctx.lineTo(100, 200); this.ctx.moveTo(0, 100); this.ctx.lineTo(200, 100); this.ctx.stroke();
 
-                const mapScale = 0.04; // Escala para mapa de 2000x2000
+                const mapScale = 0.04; 
                 this.drawPoint(shipPos, 'blue', 6, mapScale);
                 items.forEach(item => this.drawPoint(item.position, 'lime', 3, mapScale));
                 entities.forEach(ent => {
@@ -209,12 +209,13 @@
         }
 
         // ==========================================
-        // AMBIENTE (MAPA GIGANTE 2000x2000 E COLISORES FIXOS)
+        // AMBIENTE (RAYCAST DE CHÃO)
         // ==========================================
         class Environment {
             constructor(scene, state, narrative) {
                 this.scene = scene; this.state = state; this.narrative = narrative;
                 this.collidables = []; this.collectibles = [];
+                this.walkableMeshes = []; // Superfícies que o jogador pode pisar
                 
                 this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
                 this.sunLight.castShadow = true;
@@ -225,7 +226,7 @@
                 this.hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x444444, 1);
                 this.scene.add(this.hemiLight);
 
-                this.scene.fog = new THREE.FogExp2(0x87CEEB, 0.005); // Névoa mais aberta
+                this.scene.fog = new THREE.FogExp2(0x87CEEB, 0.005); 
 
                 this.buildTerrain();
                 this.buildJungle(); 
@@ -238,7 +239,7 @@
             }
 
             addCollider(mesh) {
-                mesh.updateMatrixWorld(true); // Força a atualização da posição antes de criar a caixa
+                mesh.updateMatrixWorld(true);
                 this.collidables.push(new THREE.Box3().setFromObject(mesh));
             }
 
@@ -247,8 +248,8 @@
                 const pos = geo.attributes.position;
                 for (let i = 0; i < pos.count; i++) {
                     const x = pos.getX(i); const y = pos.getY(i);
-                    let z = Math.sin(x * 0.01) * Math.cos(y * 0.01) * 15; // Colinas maiores
-                    if (x > 500 && y < -500) z -= 20; // Abismo na Lagoa
+                    let z = Math.sin(x * 0.01) * Math.cos(y * 0.01) * 15; 
+                    if (x > 500 && y < -500) z -= 20; 
                     pos.setZ(i, z);
                 }
                 geo.computeVertexNormals();
@@ -256,6 +257,7 @@
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.rotation.x = -Math.PI / 2; mesh.receiveShadow = true;
                 this.scene.add(mesh);
+                this.walkableMeshes.push(mesh); // Adiciona o chão como superfície caminhável
             }
 
             buildJungle() {
@@ -264,7 +266,7 @@
                 const treeLeavesGeo = new THREE.ConeGeometry(10, 25, 5);
                 const treeLeavesMat = new THREE.MeshStandardMaterial({ color: 0x1a3a10, flatShading: true });
 
-                const numTrees = 3000; // Mais árvores para o mapa maior
+                const numTrees = 3000; 
                 const trunks = new THREE.InstancedMesh(treeTrunkGeo, treeTrunkMat, numTrees);
                 const leaves = new THREE.InstancedMesh(treeLeavesGeo, treeLeavesMat, numTrees);
                 
@@ -275,11 +277,10 @@
                     const x = (Math.random() - 0.5) * 1800;
                     const z = (Math.random() - 0.5) * 1800;
                     
-                    // Evitar spawnar nas estruturas
-                    if (Math.abs(x) < 150 && Math.abs(z) < 150) continue; // Centro
-                    if (Math.abs(x) < 200 && z < -600) continue; // Vulcão
-                    if (x < -400 && Math.abs(z) < 400) continue; // Cânions
-                    if (x > 400 && z > 400) continue; // Lagoa
+                    if (Math.abs(x) < 150 && Math.abs(z) < 150) continue; 
+                    if (Math.abs(x) < 200 && z < -600) continue; 
+                    if (x < -400 && Math.abs(z) < 400) continue; 
+                    if (x > 400 && z > 400) continue; 
                     
                     const y = Math.sin(x * 0.01) * Math.cos(z * 0.01) * 15;
                     const scale = 0.8 + Math.random() * 1.5;
@@ -301,7 +302,8 @@
             buildZone1_Volcano() {
                 const volcano = new THREE.Mesh(new THREE.ConeGeometry(200, 300, 16), new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true }));
                 volcano.position.set(0, 0, -800); this.scene.add(volcano);
-                this.addCollider(volcano);
+                this.walkableMeshes.push(volcano); // Permite subir a montanha
+                this.addCollider(volcano); // Colisão para não atravessar
             }
 
             buildZone2_Canyons() {
@@ -322,7 +324,7 @@
                 roof.position.y = 45; center.add(roof);
                 
                 center.position.set(0, 0, 0); this.scene.add(center);
-                this.addCollider(mainBuild); // Agora a colisão é aplicada corretamente após a matriz de mundo
+                this.addCollider(mainBuild); 
             }
 
             buildZone4_Lagoon() {
@@ -350,10 +352,10 @@
                 const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
                 const padPositions = [
                     new THREE.Vector3(0, 2, 60),
-                    new THREE.Vector3(0, 2, -700),
+                    new THREE.Vector3(0, 250, -800), // No topo do vulcão
                     new THREE.Vector3(-600, 2, 0),
                     new THREE.Vector3(700, 2, 700),
-                    new THREE.Vector3(300, 65, -300) // Em cima do monotrilho
+                    new THREE.Vector3(300, 65, -300) 
                 ];
 
                 padPositions.forEach((pos, i) => {
@@ -390,17 +392,17 @@
         }
 
         // ==========================================
-        // JOGADOR (FÍSICA DE DESLIZAMENTO E COLISÃO CORRIGIDA)
+        // JOGADOR (RAYCAST E COLISÃO CORRIGIDOS)
         // ==========================================
         class Player {
-            constructor(camera, scene, collidables, state) {
-                this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = state;
+            constructor(camera, scene, env, state) {
+                this.camera = camera; this.scene = scene; this.env = env; this.state = state;
                 this.controls = new PointerLockControls(camera, document.body);
                 
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isCrouching = false; this.isSprinting = false; this.isMoving = false;
                 this.bobTimer = 0;
-                this.baseY = 4.0; // Altura da câmera (Personagem tem 4m)
+                this.baseY = 4.0;
                 
                 this.playerBox = new THREE.Box3(); this.hitboxSize = new THREE.Vector3(2, 4, 2);
 
@@ -412,7 +414,7 @@
                 this.battery = 100; this.isFlashlightOn = false;
                 this.batteryFill = document.getElementById('battery-fill');
 
-                // MODELO DO CORPO
+                // CORPO
                 this.bodyGroup = new THREE.Group();
                 const skinMat = new THREE.MeshStandardMaterial({ color: 0xd2a679 });
                 const armR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2, 0.4), skinMat); armR.position.set(0.8, -1, -1); armR.rotation.x = -0.5;
@@ -420,15 +422,15 @@
                 this.bodyGroup.add(armR); this.bodyGroup.add(armL);
                 this.camera.add(this.bodyGroup); this.bodyGroup.position.y = 0.2;
 
+                this.raycaster = new THREE.Raycaster(); // Raycaster para o chão
+                this.downVector = new THREE.Vector3(0, -1, 0);
+
                 document.addEventListener('keydown', e => this.onKeyDown(e));
                 document.addEventListener('keyup', e => this.onKeyUp(e));
             }
 
             onKeyDown(e) {
-                if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyC', 'ShiftLeft', 'Space'].includes(e.code)) {
-                    e.preventDefault();
-                }
-                
+                if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyC', 'ShiftLeft', 'Space'].includes(e.code)) e.preventDefault();
                 if (this.state.isGameOver || this.state.isWin || this.state.isCinematic || this.state.isPaused || this.state.isMenuActive) return;
                 
                 switch (e.code) {
@@ -458,20 +460,17 @@
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isSprinting = false; this.isCrouching = false;
                 this.baseY = 4.0;
-                this.camera.position.y = this.baseY;
             }
 
-            update(delta, time, env, narrative) {
+            update(delta, time, narrative) {
                 if (!this.controls.isLocked || this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
 
-                // Velocidades ajustadas para o mapa grande
                 let speed = 40.0;
                 if (this.isSprinting && !this.isCrouching) speed = 80.0;
                 if (this.isCrouching) speed = 20.0;
 
                 const moveDistance = speed * delta;
                 
-                // Movimento customizado com vetores (Fim do bug de colisão)
                 const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion).setY(0).normalize();
                 const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion).setY(0).normalize();
                 const moveDir = new THREE.Vector3();
@@ -484,39 +483,40 @@
                 if (moveDir.lengthSq() > 0) {
                     moveDir.normalize().multiplyScalar(moveDistance);
                     
-                    // Teste Eixo X
+                    // Eixo X
                     const oldX = this.camera.position.x;
                     this.camera.position.x += moveDir.x;
                     this.playerBox.setFromCenterAndSize(new THREE.Vector3(this.camera.position.x, this.camera.position.y - 2, this.camera.position.z), this.hitboxSize);
-                    if (this.collidables.some(box => this.playerBox.intersectsBox(box))) {
-                        this.camera.position.x = oldX;
-                    }
+                    if (this.env.collidables.some(box => this.playerBox.intersectsBox(box))) this.camera.position.x = oldX;
 
-                    // Teste Eixo Z
+                    // Eixo Z
                     const oldZ = this.camera.position.z;
                     this.camera.position.z += moveDir.z;
                     this.playerBox.setFromCenterAndSize(new THREE.Vector3(this.camera.position.x, this.camera.position.y - 2, this.camera.position.z), this.hitboxSize);
-                    if (this.collidables.some(box => this.playerBox.intersectsBox(box))) {
-                        this.camera.position.z = oldZ;
-                    }
+                    if (this.env.collidables.some(box => this.playerBox.intersectsBox(box))) this.camera.position.z = oldZ;
 
                     this.isMoving = true;
                 } else {
                     this.isMoving = false;
                 }
 
+                // RAYCAST DO CHÃO (MÁGICA AQUI: Faz o jogador subir montanhas e não atravessar)
+                this.raycaster.set(new THREE.Vector3(this.camera.position.x, this.camera.position.y + 100, this.camera.position.z), this.downVector);
+                const intersects = this.raycaster.intersectObjects(this.env.walkableMeshes, true);
+                
+                if (intersects.length > 0) {
+                    const groundY = intersects[0].point.y;
+                    // Define a altura baseada no chão + altura da câmera
+                    this.camera.position.y = groundY + this.baseY;
+                }
+
                 // Headbob
                 if (this.isMoving) {
                     const bobSpeed = this.isSprinting ? 20 : 10;
                     this.bobTimer += delta * bobSpeed;
-                    this.camera.position.y = this.baseY + Math.sin(this.bobTimer) * 0.1;
+                    this.camera.position.y += Math.sin(this.bobTimer) * 0.1; // Bobeira na câmera
                     this.bodyGroup.children[0].rotation.x = -0.5 + Math.sin(this.bobTimer) * 0.1;
                     this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.1;
-                } else {
-                    this.bobTimer += delta * 2;
-                    this.camera.position.y = this.baseY + Math.sin(this.bobTimer) * 0.05;
-                    this.bodyGroup.children[0].rotation.x = -0.5 + Math.sin(this.bobTimer) * 0.02;
-                    this.bodyGroup.children[1].rotation.x = -0.5 - Math.sin(this.bobTimer) * 0.02;
                 }
 
                 // Lanterna
@@ -532,27 +532,27 @@
                     if (this.battery <= 0) { this.battery = 0; this.isFlashlightOn = false; this.flashlight.visible = false; }
                 }
 
-                this.checkInteraction(env, narrative);
+                this.checkInteraction(narrative);
             }
 
-            checkInteraction(env, narrative) {
+            checkInteraction(narrative) {
                 const prompt = document.getElementById('interaction-prompt');
                 let canInteract = false;
 
-                for (let i = env.collectibles.length - 1; i >= 0; i--) {
-                    const item = env.collectibles[i];
-                    if (this.camera.position.distanceTo(item.position) < 8) { // Aumentado raio de interação para mapa grande
+                for (let i = this.env.collectibles.length - 1; i >= 0; i--) {
+                    const item = this.env.collectibles[i];
+                    if (this.camera.position.distanceTo(item.position) < 10) { 
                         canInteract = true; prompt.classList.remove('hidden');
                         prompt.innerText = "[E] Examinar Dados";
                         if (window.keys['KeyE']) {
                             narrative.showModal("LOG DE DADOS", item.userData.text);
-                            env.scene.remove(item); env.collectibles.splice(i, 1);
+                            this.env.scene.remove(item); this.env.collectibles.splice(i, 1);
                             window.keys['KeyE'] = false; break;
                         }
                     }
                 }
 
-                if (this.camera.position.distanceTo(env.shipPos) < 50) {
+                if (this.camera.position.distanceTo(this.env.shipPos) < 50) {
                     canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Embarcar e Escapar";
                     if (window.keys['KeyE']) {
                         if (this.state.datapads >= 5) {
@@ -695,7 +695,6 @@
         class Game {
             constructor() {
                 this.scene = new THREE.Scene();
-                // FOV e FAR plane aumentados para ver o mapa gigante
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 3000);
                 this.camera.position.set(100, 100, 300);
 
@@ -711,7 +710,7 @@
                 
                 this.narrative = new NarrativeManager(this.state);
                 this.environment = new Environment(this.scene, this.state, this.narrative);
-                this.player = new Player(this.camera, this.scene, this.environment.collidables, this.state);
+                this.player = new Player(this.camera, this.scene, this.environment, this.state);
                 this.raptor = null; this.trex = null;
                 
                 this.menuAngle = 0;
@@ -777,8 +776,6 @@
                     document.getElementById('hud').classList.remove('hidden');
                     
                     this.state.isMenuActive = false;
-                    
-                    // Spawn seguro e alto
                     this.camera.position.set(0, 4, 100); 
                     
                     this.state.isCinematic = true;
@@ -816,7 +813,7 @@
                 }
 
                 if (!this.state.isGameOver && !this.state.isWin) {
-                    this.player.update(delta, time, this.environment, this.narrative);
+                    this.player.update(delta, time, this.narrative);
                     this.environment.updateLighting();
 
                     if (this.state.act >= 2 && !this.raptor) this.raptor = new RaptorAI(this.scene, this.player, this.state);
