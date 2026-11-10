@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Oswald', sans-serif; color: #fff; user-select: none; }
-        #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; cursor: crosshair; }
         .hidden { display: none !important; }
 
         /* Overlay CRT/PSX */
@@ -83,7 +83,14 @@
                 <li id="btn-start">INICIAR EPISÓDIO</li>
                 <li id="btn-quit">SAIR</li>
             </ul>
-            <p style="margin-top: 30px; color: #888; font-size: 14px;">Controles: WASD (Mover) | Shift (Correr) | C (Agachar) | F (Lanterna) | E (Interagir)</p>
+            <p style="margin-top: 30px; color: #00ff00; font-size: 16px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
+                CONTROLES:<br>
+                WASD: Mover<br>
+                Shift: Correr<br>
+                C: Agachar (Furtivo)<br>
+                F: Lanterna<br>
+                E: Interagir
+            </p>
         </div>
         <div class="menu-right">
             <h1 style="font-family: 'Oswald'; font-size: 32px; text-shadow: 2px 2px 4px #000;">EPISODE 1: THE INTRUDER</h1>
@@ -309,7 +316,9 @@
                 mainBuild.position.y = 4; center.add(mainBuild);
                 const roof = new THREE.Mesh(new THREE.ConeGeometry(18, 8, 12), new THREE.MeshStandardMaterial({ color: 0x8b5a2b, flatShading: true }));
                 roof.position.y = 12; center.add(roof);
-                center.position.set(0, 0, 20); this.scene.add(center);
+                
+                // AFASTADO DO SPAWN: Centro fica na posição 0,0,0
+                center.position.set(0, 0, 0); this.scene.add(center);
                 this.collidables.push(new THREE.Box3().setFromObject(mainBuild));
             }
 
@@ -336,7 +345,7 @@
                 const padGeo = new THREE.BoxGeometry(0.4, 0.5, 0.1);
                 const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
                 const padPositions = [
-                    new THREE.Vector3(0, 1, 20),
+                    new THREE.Vector3(0, 1, 10),     // Perto do spawn
                     new THREE.Vector3(0, 1, -75),
                     new THREE.Vector3(-80, 1, 0),
                     new THREE.Vector3(100, 1, 100),
@@ -377,14 +386,13 @@
         }
 
         // ==========================================
-        // JOGADOR (CORREÇÃO DO WASD E CONTROLES)
+        // JOGADOR (MECÂNICA E COLISÃO CORRIGIDAS)
         // ==========================================
         class Player {
             constructor(camera, scene, collidables, state) {
                 this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = state;
                 this.controls = new PointerLockControls(camera, document.body);
                 
-                // Variáveis de Estado de Movimento
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isCrouching = false; this.isSprinting = false; this.isMoving = false;
                 this.bobTimer = 0;
@@ -412,9 +420,10 @@
                 document.addEventListener('keyup', e => this.onKeyUp(e));
             }
 
-            // Bloqueia Ctrl, Alt, etc., que causam bugs no navegador
             onKeyDown(e) {
-                if (e.ctrlKey || e.altKey) return;
+                // Previne comportamentos estranhos do navegador em teclas de jogo
+                if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyC', 'ShiftLeft', 'Space'].includes(e.code)) e.preventDefault();
+                
                 if (this.state.isGameOver || this.state.isWin || this.state.isCinematic || this.state.isPaused || this.state.isMenuActive) return;
                 
                 switch (e.code) {
@@ -423,7 +432,7 @@
                     case 'KeyA': this.moveL = true; break;
                     case 'KeyD': this.moveR = true; break;
                     case 'ShiftLeft': this.isSprinting = true; break;
-                    case 'KeyC': this.isCrouching = true; this.baseY = 1.0; break; // Tecla C para agachar
+                    case 'KeyC': this.isCrouching = true; this.baseY = 1.0; break; // C para agachar (Seguro)
                     case 'KeyF': if(this.battery > 0) { this.isFlashlightOn = !this.isFlashlightOn; this.flashlight.visible = this.isFlashlightOn; } break;
                     case 'Escape': if(!this.state.isCinematic) { document.getElementById('pause-menu').classList.remove('hidden'); this.state.isPaused = true; document.exitPointerLock(); } break;
                 }
@@ -440,7 +449,6 @@
                 }
             }
 
-            // Função que reseta o jogador quando o jogo pausa (para não bugar teclas)
             resetControls() {
                 this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isSprinting = false; this.isCrouching = false;
@@ -451,7 +459,6 @@
             update(delta, time, env, narrative) {
                 if (!this.controls.isLocked || this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
 
-                // LÓGICA DE MOVIMENTO DIRETA (Corrige o bug de não andar)
                 let speed = 15.0;
                 if (this.isSprinting && !this.isCrouching) speed = 30.0;
                 if (this.isCrouching) speed = 8.0;
@@ -459,6 +466,7 @@
                 const moveDistance = speed * delta;
                 const oldPos = this.camera.position.clone();
 
+                // Movimentação corrigida e direta
                 if (this.moveF) this.controls.moveForward(moveDistance);
                 if (this.moveB) this.controls.moveForward(-moveDistance);
                 if (this.moveL) this.controls.moveRight(-moveDistance);
@@ -471,10 +479,10 @@
                 let collision = false;
                 this.collidables.forEach(box => { if (this.playerBox.intersectsBox(box)) collision = true; });
                 if (collision) { 
-                    this.camera.position.copy(oldPos); 
+                    this.camera.position.copy(oldPos); // Desfaz o movimento se bater
                 }
 
-                // Headbob e Altura da Câmera
+                // Headbob
                 if (this.isMoving) {
                     const bobSpeed = this.isSprinting ? 20 : 10;
                     this.bobTimer += delta * bobSpeed;
@@ -663,7 +671,7 @@
             constructor() {
                 this.scene = new THREE.Scene();
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 300);
-                this.camera.position.set(30, 50, 80);
+                this.camera.position.set(30, 50, 80); // Câmera do menu
 
                 this.renderer = new THREE.WebGLRenderer({ antialias: false });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -697,14 +705,19 @@
                         this.pauseGame();
                     }
                 });
+
+                // Se o jogador clicar na tela sem o mouse travado, trava de novo
+                document.getElementById('game-container').addEventListener('click', () => {
+                    if (!this.state.isMenuActive && !this.state.isPaused && !this.player.controls.isLocked) {
+                        this.player.controls.lock();
+                    }
+                });
             }
 
             pauseGame() {
                 this.state.isPaused = true;
                 document.getElementById('pause-menu').classList.remove('hidden');
                 document.exitPointerLock();
-                
-                // Limpa o buffer de tempo e reseta as teclas para não travar o jogador
                 this.clock.getDelta(); 
                 window.keys = {};
                 this.player.resetControls();
@@ -717,10 +730,9 @@
                 document.getElementById('btn-resume').onclick = () => { 
                     document.getElementById('pause-menu').classList.add('hidden'); 
                     this.state.isPaused = false; 
-                    this.clock.getDelta(); // Reseta tempo
-                    this.player.controls.lock(); // Aciona o mouse lock
+                    this.clock.getDelta(); 
+                    this.player.controls.lock(); 
                 };
-                
                 document.getElementById('btn-exit').onclick = () => location.reload();
 
                 window.addEventListener('resize', () => {
@@ -740,7 +752,9 @@
                     document.getElementById('hud').classList.remove('hidden');
                     
                     this.state.isMenuActive = false;
-                    this.camera.position.set(0, 2, 20); 
+                    
+                    // PONTO DE SPAWN SEGURO (LONGE DO CENTRO DE VISITANTES)
+                    this.camera.position.set(15, 2, 15); 
                     
                     this.state.isCinematic = true;
                     document.body.classList.add('cinematic-active');
