@@ -3,137 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurassic Park: Biosyn Protocol - Story Mode</title>
+    <title>Jurassic Park: Biosyn Protocol - Definitive Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400;600&family=VT323&display=swap');
 
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: #000;
-            font-family: 'Oswald', sans-serif;
-            color: #fff;
-            user-select: none;
-        }
-
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Oswald', sans-serif; color: #fff; user-select: none; }
         #game-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         .hidden { display: none !important; }
 
-        /* ==========================================
-           NOVO MENU PRINCIPAL (ESTILO CONSOLE AAA)
-           ========================================== */
-        #main-menu {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 50; display: flex; background-color: #050505;
-            transition: opacity 1s ease;
-        }
-
-        /* Textura de pedra para o lado esquerdo */
-        .menu-left {
-            width: 45%; height: 100%;
-            background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%);
-            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.1"/></svg>');
-            position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw;
-            /* Efeito de borda rasgada */
-            clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%);
-            box-shadow: 10px 0 20px rgba(0,0,0,0.8);
-        }
-
-        /* Logo Jurassic Park recriado em CSS */
-        .logo-container { margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; width: 220px; }
-        .logo-circle {
-            width: 140px; height: 140px; border-radius: 50%; background-color: #cc0000;
-            border: 4px solid #111; box-shadow: inset 0 0 20px #000;
-            display: flex; justify-content: center; align-items: center;
-            position: relative; overflow: hidden; margin-bottom: -20px; z-index: 1;
-        }
-        .logo-circle::after {
-            content: "🦖"; font-size: 80px; transform: scaleX(-1); position: absolute; bottom: 10px;
-            filter: brightness(0); /* Deixa o emoji preto */
-        }
-        .logo-text {
-            background-color: #ffcc00; color: #000; font-family: 'Cinzel', serif;
-            font-weight: bold; font-size: 24px; padding: 5px 15px; border: 3px solid #111;
-            text-align: center; width: 100%; box-sizing: border-box; z-index: 2;
-            letter-spacing: 2px; text-shadow: 1px 1px 0px #fff;
-        }
-        .logo-sub {
-            background-color: #111; color: #ffcc00; font-family: 'Oswald', sans-serif;
-            font-size: 14px; padding: 2px 10px; border: 2px solid #ffcc00; margin-top: 5px;
-            letter-spacing: 4px; font-weight: bold;
-        }
-
-        /* Lista de Menu */
-        .menu-list { list-style: none; padding: 0; margin: 0; font-family: 'Oswald', sans-serif; }
-        .menu-list li {
-            font-size: 28px; color: #ffcc00; font-weight: 600; margin-bottom: 15px;
-            cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); transition: all 0.2s;
-            position: relative;
-        }
-        .menu-list li:hover { color: #fff; text-shadow: 0 0 10px #ffcc00; transform: translateX(10px); }
-        .menu-list li::before {
-            content: ">"; position: absolute; left: -25px; opacity: 0; color: #ffcc00; transition: opacity 0.2s;
-        }
-        .menu-list li:hover::before { opacity: 1; }
-
-        /* Lado Direito (Imagem e Título) */
-        .menu-right {
-            width: 55%; height: 100%; position: relative;
-            background: linear-gradient(to right, #000 0%, transparent 20%), 
-                        url('https://images.unsplash.com/photo-1614292086524-48263bc46d8c?q=80&w=2070&auto=format&fit=crop') center/cover;
-            /* Placeholder: Substitua a URL acima pela sua imagem do T-Rex se desejar */
-            display: flex; flex-direction: column; justify-content: space-between; padding: 40px;
-        }
-
-        .episode-header {
-            display: flex; justify-content: space-between; align-items: center;
-            font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 600;
-            text-shadow: 2px 2px 4px #000; letter-spacing: 2px;
-        }
-        .episode-header h1 { margin: 0; font-size: 32px; }
-        .arrow-btn {
-            width: 50px; height: 50px; background: rgba(0,0,0,0.6); border: 2px solid #fff;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            font-size: 28px; cursor: pointer; transition: background 0.3s;
-        }
-        .arrow-btn:hover { background: #ffcc00; color: #000; }
-
-        .bottom-links {
-            display: flex; justify-content: flex-end; gap: 30px;
-            font-size: 20px; font-weight: 600; text-shadow: 1px 1px 2px #000;
-            letter-spacing: 1px; margin-bottom: 20px;
-        }
-        .bottom-links span { cursor: pointer; transition: color 0.3s; }
-        .bottom-links span:hover { color: #ffcc00; }
-
-
-        /* ==========================================
-           HUD DO JOGO (Mantido do original)
-           ========================================== */
+        /* Efeito CRT / PSX Scanlines */
         #psx-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 10;
-            background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%),
-                        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10;
+            background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.9) 100%), linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
             background-size: 100% 100%, 100% 3px;
         }
 
+        /* ==========================================
+           MENU PRINCIPAL COM FUNDO DE JOGO
+           ========================================== */
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: flex; background-color: transparent; transition: opacity 0.5s ease; }
+        
+        .menu-left {
+            width: 45%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Fundo transparente escuro */
+            backdrop-filter: blur(4px); /* Desfoque para ler o texto */
+            -webkit-backdrop-filter: blur(4px);
+            position: relative; display: flex; flex-direction: column; justify-content: center; padding-left: 8vw;
+            clip-path: polygon(0 0, 100% 0, 90% 10%, 98% 20%, 85% 30%, 95% 40%, 88% 50%, 100% 60%, 85% 70%, 96% 80%, 90% 90%, 100% 100%, 0 100%);
+            box-shadow: 10px 0 20px rgba(0,0,0,0.5);
+        }
+        .menu-right {
+            width: 55%; height: 100%; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px;
+            background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.6) 100%);
+        }
+
+        .logo-container { margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; width: 220px; }
+        .logo-circle { width: 140px; height: 140px; border-radius: 50%; background-color: #cc0000; border: 4px solid #111; box-shadow: inset 0 0 20px #000; display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: -20px; z-index: 1; }
+        .logo-circle::after { content: "🦖"; font-size: 80px; transform: scaleX(-1); position: absolute; bottom: 10px; filter: brightness(0); }
+        .logo-text { background-color: #ffcc00; color: #000; font-family: 'Cinzel', serif; font-weight: bold; font-size: 24px; padding: 5px 15px; border: 3px solid #111; text-align: center; width: 100%; box-sizing: border-box; z-index: 2; letter-spacing: 2px; }
+
+        .menu-list { list-style: none; padding: 0; margin: 0; }
+        .menu-list li { font-size: 26px; color: #ffcc00; font-weight: 600; margin-bottom: 15px; cursor: pointer; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); transition: all 0.2s; position: relative; }
+        .menu-list li:hover { color: #fff; text-shadow: 0 0 10px #ffcc00; transform: translateX(10px); }
+        .menu-list li::before { content: ">"; position: absolute; left: -25px; opacity: 0; color: #ffcc00; transition: opacity 0.2s; }
+        .menu-list li:hover::before { opacity: 1; }
+
+        /* Sub-Menus */
+        .sub-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 60; }
+        .sub-menu h2 { font-size: 40px; color: #ffcc00; margin-bottom: 30px; font-family: 'Cinzel', serif; }
+        .sub-menu label { font-size: 20px; margin: 10px 0; display: flex; justify-content: space-between; width: 300px; }
+        .sub-menu input[type="range"] { width: 150px; }
+        .sub-menu button { margin-top: 30px; padding: 10px 30px; background: transparent; border: 2px solid #ffcc00; color: #ffcc00; font-size: 20px; cursor: pointer; }
+        .sub-menu button:hover { background: #ffcc00; color: #000; }
+
+        /* ==========================================
+           HUD DO JOGO
+           ========================================== */
         #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; font-family: 'VT323', monospace; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
         #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: rgba(255,255,255,0.4); }
         
-        #interaction-prompt { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00; font-size: 20px; text-align: center; }
+        #interaction-prompt { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 5px 15px; border: 1px solid #00ff00; font-size: 20px; }
         #battery-ui { position: absolute; bottom: 30px; left: 30px; background: rgba(0,0,0,0.6); padding: 10px; border: 1px solid #00ff00; }
         .battery-bar { width: 150px; height: 15px; background: #333; margin-top: 5px; border: 1px solid #00ff00; }
-        #battery-fill { width: 100%; height: 100%; background: #00ff00; }
-
+        #battery-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.1s, background-color 0.3s; }
+        
         #objectives { position: absolute; top: 30px; right: 30px; background: rgba(0,0,0,0.7); padding: 15px; border-left: 4px solid #00ff00; text-align: right; font-size: 18px; }
         #act-indicator { font-size: 24px; color: #ffff00; margin-bottom: 10px; }
         #radio-ui { position: absolute; bottom: 30px; right: 30px; width: 350px; background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #ff0000; }
 
-        #ui-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 2px solid #00ff00; padding: 30px; width: 400px; pointer-events: auto; text-align: center; z-index: 15; font-family: 'VT323', monospace; }
+        /* Alerta de Perigo */
+        #danger-alert { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #ff0000; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px red; animation: flash 0.5s infinite alternate; }
+        @keyframes flash { from { opacity: 0.3; } to { opacity: 1; } }
+
+        /* Pause Menu & Modals */
+        #pause-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 40; }
+        #pause-menu button { margin: 10px; padding: 10px 40px; font-size: 24px; background: transparent; border: 2px solid #fff; color: #fff; cursor: pointer; font-family: 'Oswald'; }
+        #pause-menu button:hover { background: #fff; color: #000; }
+
+        #ui-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 2px solid #00ff00; padding: 30px; width: 400px; pointer-events: auto; text-align: center; z-index: 45; font-family: 'VT323', monospace; }
         #ui-modal button { background: #00ff00; color: #000; border: none; padding: 10px 20px; font-family: 'VT323'; font-size: 20px; cursor: pointer; margin-top: 20px; }
 
-        /* CINEMATIC UI */
+        /* Cinemática */
         .letterbox { position: absolute; left: 0; width: 100%; height: 12vh; background: #000; z-index: 30; transition: transform 1s ease; }
         #letterbox-top { top: 0; transform: translateY(-100%); }
         #letterbox-bottom { bottom: 0; transform: translateY(100%); }
@@ -141,12 +92,9 @@
         .cinematic-active #letterbox-bottom { transform: translateY(0); }
         #subtitle { position: absolute; bottom: 15vh; left: 50%; transform: translateX(-50%); width: 80%; text-align: center; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; z-index: 31; font-style: italic; font-family: 'VT323', monospace; }
 
-        /* Telas de Game Over e Win */
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; text-align: center; }
-        .screen h1 { font-size: 60px; margin: 0; color: #ff0000; text-shadow: 0 0 20px red; font-family: 'Cinzel', serif; }
-        .screen p { font-size: 20px; max-width: 600px; line-height: 1.5; }
-        .screen button { margin-top: 40px; padding: 15px 30px; font-size: 24px; font-family: 'Oswald'; background: transparent; color: #ffcc00; border: 2px solid #ffcc00; cursor: pointer; text-transform: uppercase; }
-        .screen button:hover { background: #ffcc00; color: #000; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
+        .screen h1 { font-size: 60px; margin: 0; color: #ff0000; font-family: 'Cinzel', serif; }
+        .screen button { margin-top: 40px; padding: 15px 30px; font-size: 24px; font-family: 'Oswald'; background: transparent; color: #ffcc00; border: 2px solid #ffcc00; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -158,38 +106,41 @@
     <div id="letterbox-bottom" class="letterbox"></div>
     <div id="subtitle" class="hidden"></div>
 
-    <!-- NOVO MENU INICIAL -->
-    <div id="main-menu">
+    <!-- MENU PRINCIPAL -->
+    <div id="main-menu" class="ui-layer">
         <div class="menu-left">
             <div class="logo-container">
                 <div class="logo-circle"></div>
                 <div class="logo-text">JURASSIC PARK</div>
-                <div class="logo-sub">THE GAME</div>
             </div>
-            <ul class="menu-list">
-                <li id="start-btn">BEGIN EPISODE</li>
-                <li onclick="alert('Nenhum save encontrado.')">LOAD GAME</li>
-                <li onclick="alert('Configurações não disponíveis na demo.')">SETTINGS</li>
-                <li onclick="alert('Language: PT-BR / EN-US')">LANGUAGE</li>
-                <li onclick="window.close()">QUIT</li>
+            <ul class="menu-list" id="menu-list">
+                <li id="btn-start" data-pt="INICIAR EPISÓDIO" data-en="BEGIN EPISODE">INICIAR EPISÓDIO</li>
+                <li id="btn-load" data-pt="CARREGAR JOGO" data-en="LOAD GAME">CARREGAR JOGO</li>
+                <li id="btn-settings" data-pt="CONFIGURAÇÕES" data-en="SETTINGS">CONFIGURAÇÕES</li>
+                <li id="btn-language" data-pt="IDIOMA" data-en="LANGUAGE">IDIOMA</li>
+                <li id="btn-quit" data-pt="SAIR" data-en="QUIT">SAIR</li>
             </ul>
         </div>
         <div class="menu-right">
-            <div class="episode-header">
-                <h1>EPISODE 1: THE INTRUDER</h1>
-                <div class="arrow-btn">></div>
-            </div>
-            <!-- A imagem do T-Rex é o background do .menu-right no CSS -->
-            <div class="bottom-links">
-                <span>SCENARIOS</span>
-                <span>JOURNAL</span>
+            <h1 style="font-family: 'Oswald'; font-size: 32px; text-shadow: 2px 2px 4px #000;">EPISODE 1: THE INTRUDER</h1>
+            <div style="display:flex; justify-content: flex-end; gap: 30px; font-size: 20px; font-weight: bold;">
+                <span>SCENARIOS</span> <span>JOURNAL</span>
             </div>
         </div>
+    </div>
+
+    <!-- SUB MENUS -->
+    <div id="settings-menu" class="sub-menu hidden">
+        <h2>CONFIGURAÇÕES</h2>
+        <label>Sensibilidade do Mouse <input type="range" id="sens-slider" min="0.1" max="2.0" step="0.1" value="1.0"></label>
+        <label>Volume Geral <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"></label>
+        <button id="btn-close-settings">VOLTAR</button>
     </div>
 
     <!-- HUD DO JOGO -->
     <div id="hud" class="hidden">
         <div id="crosshair">+</div>
+        <div id="danger-alert" class="hidden">⚠️ PERIGO ⚠️</div>
         <div id="interaction-prompt" class="hidden">Pressione [E]</div>
         
         <div id="battery-ui">
@@ -208,12 +159,20 @@
             <div>[BIOSYN SAT-COM]</div>
             <div id="radio-text"></div>
         </div>
+    </div>
 
-        <div id="ui-modal" class="hidden">
-            <h3 id="modal-title">SISTEMA</h3>
-            <p id="modal-text"></p>
-            <button onclick="document.getElementById('ui-modal').classList.add('hidden'); document.getElementById('game-container').requestPointerLock();">FECHAR</button>
-        </div>
+    <!-- PAUSE & MODALS -->
+    <div id="pause-menu" class="hidden">
+        <h1 style="font-family: 'Cinzel'; color: #ffcc00; margin-bottom: 20px;">PAUSADO</h1>
+        <button id="btn-resume">CONTINUAR</button>
+        <button id="btn-save">SALVAR JOGO</button>
+        <button id="btn-exit">SAIR PARA O MENU</button>
+    </div>
+
+    <div id="ui-modal" class="hidden">
+        <h3 id="modal-title">SISTEMA</h3>
+        <p id="modal-text"></p>
+        <button onclick="document.getElementById('ui-modal').classList.add('hidden'); document.getElementById('game-container').requestPointerLock();">FECHAR</button>
     </div>
 
     <div id="game-over-screen" class="screen hidden">
@@ -224,7 +183,7 @@
 
     <div id="win-screen" class="screen hidden">
         <h1>EXTRAÇÃO BEM-SUCEDIDA</h1>
-        <p>Você recuperou os dados e fugiu de Isla Nublar. A Biosyn agradece.</p>
+        <p>Você recuperou os dados e fugiu de Isla Nublar.</p>
         <button onclick="location.reload()">JOGAR NOVAMENTE</button>
     </div>
 
@@ -243,127 +202,81 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         // ==========================================
-        // UTILITÁRIOS
+        // CONFIGURAÇÕES GLOBAIS E I18N
         // ==========================================
-        const getTerrainHeight = (x, z) => {
-            let height = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 3;
-            height += Math.sin(x * 0.1) * 1.5;
-            const distToCenter = Math.sqrt(x*x + z*z);
-            if (distToCenter < 20) height *= (distToCenter / 20); 
-            return height;
+        const I18N = {
+            pt: { start: "INICIAR EPISÓDIO", load: "CARREGAR JOGO", settings: "CONFIGURAÇÕES", lang: "IDIOMA", quit: "SAIR" },
+            en: { start: "BEGIN EPISODE", load: "LOAD GAME", settings: "SETTINGS", lang: "LANGUAGE", quit: "QUIT" }
         };
+        let currentLang = localStorage.getItem('jp_lang') || 'pt';
+        let mouseSensitivity = parseFloat(localStorage.getItem('jp_sens')) || 1.0;
+        let masterVolume = parseFloat(localStorage.getItem('jp_vol')) || 0.5;
 
-        const LORE_TEXTS = [
-            "LOG 01: A cerca sul falhou. O T-Rex quebrou a barreira.",
-            "LOG 02: O T-Rex é atraído por luz e movimento. Cuidado.",
-            "LOG 03: O fusível principal caiu perto do portão.",
-            "LOG 04: Um Raptor foi liberado. Se ele te vir, corra.",
-            "LOG 05: O portão do leste pode ser aberto se a energia voltar."
-        ];
+        // ==========================================
+        // ÁUDIO PROCEDURAL (WEB AUDIO API)
+        // ==========================================
+        class AudioManager {
+            constructor() {
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.value = masterVolume;
+                    this.masterGain.connect(this.ctx.destination);
+                    this.startRain();
+                } catch(e) { console.warn("AudioContext não suportado"); }
+            }
+
+            updateVolume(vol) { if(this.masterGain) this.masterGain.gain.value = vol; }
+
+            startRain() {
+                if(!this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 2;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer; noise.loop = true;
+                
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass'; filter.frequency.value = 1000;
+
+                noise.connect(filter); filter.connect(this.masterGain);
+                noise.start();
+            }
+
+            playThunder() {
+                if(!this.ctx) return;
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(50, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 1.5);
+                gain.gain.setValueAtTime(1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 1.5);
+            }
+
+            playRoar() {
+                if(!this.ctx) return;
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'square'; osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 1.0);
+                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.0);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 1.0);
+            }
+        }
 
         // ==========================================
         // ESTADO DO JOGO
         // ==========================================
         class GameState {
             constructor() {
-                this.datapads = 0;
-                this.hasFuse = false;
-                this.gateOpen = false;
-                this.isGameOver = false;
-                this.isWin = false;
-                this.act = 1; // 1 = Tarde, 2 = Entardecer (Raptor), 3 = Noite (T-Rex)
-                this.isCinematic = false;
-            }
-        }
-
-        // ==========================================
-        // GERENCIADOR DE HISTÓRIA E UI
-        // ==========================================
-        class NarrativeManager {
-            constructor(gameState, camera) {
-                this.state = gameState;
-                this.camera = camera;
-                this.radioText = document.getElementById('radio-text');
-                this.modalUI = document.getElementById('ui-modal');
-                this.subtitle = document.getElementById('subtitle');
-                this.actIndicator = document.getElementById('act-indicator');
-                this.objPads = document.getElementById('obj-pads');
-                
-                this.cinematicTimeouts = [];
-            }
-
-            updateHUD() {
-                this.objPads.innerText = `Data Pads: ${this.state.datapads}/5`;
-                if(this.state.act === 1) this.actIndicator.innerText = "ATO I - TARDE";
-                if(this.state.act === 2) this.actIndicator.innerText = "ATO II - ENTARDECER";
-                if(this.state.act === 3) this.actIndicator.innerText = "ATO III - NOITE";
-            }
-
-            triggerRadio(text) {
-                this.radioText.innerText = text;
-                setTimeout(() => { this.radioText.innerText = ""; }, 6000);
-            }
-
-            playIntroCutscene(onComplete) {
-                this.state.isCinematic = true;
-                document.body.classList.add('cinematic-active');
-                this.subtitle.classList.remove('hidden');
-                document.exitPointerLock();
-
-                const sequence = [
-                    { text: "1994. Isla Nublar.", time: 0 },
-                    { text: "O Projeto Jurassic Park entrou em colapso.", time: 4000 },
-                    { text: "A Biosyn enviou você, Dr. Gabriel Vance, para recuperar os segredos da InGen.", time: 8000 },
-                    { text: "O sol está se pondo. Você não está sozinho.", time: 13000 },
-                ];
-
-                sequence.forEach(step => {
-                    const t = setTimeout(() => { this.subtitle.innerText = step.text; }, step.time);
-                    this.cinematicTimeouts.push(t);
-                });
-
-                const startPos = this.camera.position.clone();
-                const endPos = new THREE.Vector3(0, 5, 20);
-                let progress = 0;
-
-                const anim = () => {
-                    if(progress < 1) {
-                        progress += 0.005;
-                        this.camera.position.lerpVectors(startPos, endPos, progress);
-                        this.camera.lookAt(0, 0, -20);
-                        requestAnimationFrame(anim);
-                    }
-                };
-                anim();
-
-                setTimeout(() => {
-                    document.body.classList.remove('cinematic-active');
-                    this.subtitle.classList.add('hidden');
-                    this.state.isCinematic = false;
-                    this.updateHUD();
-                    onComplete();
-                }, 17000);
-            }
-
-            showDataPad(padId) {
-                if (this.state.datapads >= 5) return;
-                this.state.datapads++;
-                this.updateHUD();
-                
-                this.modalUI.querySelector('#modal-title').innerText = "LOG DE DADOS";
-                this.modalUI.querySelector('#modal-text').innerText = LORE_TEXTS[padId - 1];
-                this.modalUI.classList.remove('hidden');
-                document.exitPointerLock();
-                
-                if(this.state.datapads === 2 && this.state.act === 1) {
-                    this.state.act = 2;
-                    this.updateHUD();
-                    this.triggerRadio("[ALERTA] O sol se pôs. Sensores detectaram um Raptor na área.");
-                } else if (this.state.datapads === 4 && this.state.act === 2) {
-                    this.state.act = 3;
-                    this.updateHUD();
-                    this.triggerRadio("[ALERTA CRÍTICO] A cerca caiu. O T-Rex está vindo para o seu lado.");
-                }
+                this.datapads = 0; this.hasFuse = false; this.gateOpen = false;
+                this.isGameOver = false; this.isWin = false; this.isPaused = false;
+                this.isCinematic = false; this.isMenuActive = true;
+                this.act = 1;
             }
         }
 
@@ -371,56 +284,30 @@
         // AMBIENTE
         // ==========================================
         class Environment {
-            constructor(scene, gameState, narrative) {
-                this.scene = scene;
-                this.state = gameState;
-                this.narrative = narrative;
-                this.collidables = [];
-                this.collectibles = [];
-                this.gateCollider = null;
-                
+            constructor(scene, state, narrative) {
+                this.scene = scene; this.state = state; this.narrative = narrative;
+                this.collidables = []; this.collectibles = [];
                 this.fuseBoxPos = new THREE.Vector3(15, 0, -20);
-                this.gatePos = new THREE.Vector3(0, 0, -35);
-
+                
                 this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
                 this.sunLight.castShadow = true;
-                this.sunLight.shadow.mapSize.width = 1024;
-                this.sunLight.shadow.mapSize.height = 1024;
+                this.sunLight.shadow.mapSize.width = 1024; this.sunLight.shadow.mapSize.height = 1024;
                 this.scene.add(this.sunLight);
-                
                 this.hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x444444, 1);
                 this.scene.add(this.hemiLight);
 
-                this.buildTerrain();
-                this.buildDecorations();
-                this.buildCars();
-                this.buildGate();
-                this.buildItems();
-            }
-
-            updateLighting() {
-                if (this.state.act === 1) {
-                    this.scene.background = new THREE.Color(0x87CEEB);
-                    this.scene.fog.color.setHex(0x87CEEB);
-                    this.sunLight.color.setHex(0xffffee);
-                    this.sunLight.intensity = 2;
-                    this.sunLight.position.set(50, 100, 50);
-                    this.hemiLight.intensity = 1;
-                } else if (this.state.act === 2) {
-                    this.scene.background = new THREE.Color(0xff8c00);
-                    this.scene.fog.color.setHex(0xff8c00);
-                    this.sunLight.color.setHex(0xffaa00);
-                    this.sunLight.intensity = 1;
-                    this.sunLight.position.set(-50, 30, 50);
-                    this.hemiLight.intensity = 0.5;
-                } else {
-                    this.scene.background = new THREE.Color(0x050510);
-                    this.scene.fog.color.setHex(0x050510);
-                    this.sunLight.color.setHex(0x334466);
-                    this.sunLight.intensity = 0.2;
-                    this.sunLight.position.set(0, 50, -50);
-                    this.hemiLight.intensity = 0.1;
+                this.rainCount = 5000;
+                const rainGeo = new THREE.BufferGeometry();
+                const rainPos = new Float32Array(this.rainCount * 3);
+                for(let i=0; i<this.rainCount*3; i+=3) {
+                    rainPos[i] = (Math.random()-0.5)*100; rainPos[i+1] = Math.random()*50; rainPos[i+2] = (Math.random()-0.5)*100;
                 }
+                rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+                const rainMat = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.1, transparent: true, opacity: 0.6 });
+                this.rain = new THREE.Points(rainGeo, rainMat);
+                this.scene.add(this.rain);
+
+                this.buildTerrain(); this.buildProps(); this.buildItems();
             }
 
             buildTerrain() {
@@ -428,145 +315,117 @@
                 const pos = geo.attributes.position;
                 for (let i = 0; i < pos.count; i++) {
                     const x = pos.getX(i); const y = pos.getY(i);
-                    pos.setZ(i, getTerrainHeight(x, -y));
+                    pos.setZ(i, Math.sin(x*0.05)*Math.cos(y*0.05)*3);
                 }
                 geo.computeVertexNormals();
-
                 const mat = new THREE.MeshStandardMaterial({ color: 0x2e4a25, roughness: 1, flatShading: true });
                 const mesh = new THREE.Mesh(geo, mat);
-                mesh.rotation.x = -Math.PI / 2;
-                mesh.receiveShadow = true;
+                mesh.rotation.x = -Math.PI/2; mesh.receiveShadow = true;
                 this.scene.add(mesh);
             }
 
-            buildDecorations() {
+            buildProps() {
                 const treeMat = new THREE.MeshStandardMaterial({ color: 0x1a3a10, flatShading: true });
-                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, flatShading: true });
-                const rockMat = new THREE.MeshStandardMaterial({ color: 0x555555, flatShading: true });
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314 });
+                const wallMat = new THREE.MeshStandardMaterial({ color: 0x444444, flatShading: true });
 
-                for(let i=0; i<60; i++) {
-                    const x = (Math.random() - 0.5) * 160; const z = (Math.random() - 0.5) * 160;
-                    if (Math.sqrt(x*x + z*z) < 15) continue;
-
-                    if (Math.random() > 0.4) {
-                        const tree = new THREE.Group();
-                        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 4), trunkMat);
-                        trunk.position.y = 2; trunk.castShadow = true; tree.add(trunk);
-                        const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 6, 5), treeMat);
-                        leaves.position.y = 6; leaves.castShadow = true; tree.add(leaves);
-                        tree.position.set(x, getTerrainHeight(x,z), z);
-                        this.scene.add(tree);
-                        this.collidables.push(new THREE.Box3().setFromObject(trunk));
-                    } else {
-                        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + Math.random()*2), rockMat);
-                        rock.position.set(x, getTerrainHeight(x,z), z);
-                        rock.castShadow = true; rock.receiveShadow = true;
-                        this.scene.add(rock);
-                    }
+                for(let i=0; i<50; i++) {
+                    const x = (Math.random()-0.5)*160; const z = (Math.random()-0.5)*160;
+                    if (Math.sqrt(x*x+z*z) < 15) continue;
+                    const tree = new THREE.Group();
+                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.8,4), trunkMat);
+                    trunk.position.y = 2; trunk.castShadow = true; tree.add(trunk);
+                    const leaves = new THREE.Mesh(new THREE.ConeGeometry(3,6,5), treeMat);
+                    leaves.position.y = 6; leaves.castShadow = true; tree.add(leaves);
+                    tree.position.set(x, Math.sin(x*0.05)*Math.cos(z*0.05)*3, z);
+                    this.scene.add(tree);
+                    this.collidables.push(new THREE.Box3().setFromObject(trunk));
                 }
-            }
 
-            buildCars() {
-                const carBody = new THREE.MeshStandardMaterial({ color: 0xcc1111, flatShading: true });
-                const carRoof = new THREE.MeshStandardMaterial({ color: 0xeeeeee, flatShading: true });
-                
-                for (let i = 0; i < 2; i++) {
-                    const car = new THREE.Group();
-                    const body = new THREE.Mesh(new THREE.BoxGeometry(3, 1.5, 5), carBody);
-                    body.position.y = 1; body.castShadow = true; car.add(body);
-                    const roof = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.2, 3), carRoof);
-                    roof.position.set(0, 2.3, -0.5); roof.castShadow = true; car.add(roof);
+                const ruin = new THREE.Group();
+                const wall1 = new THREE.Mesh(new THREE.BoxGeometry(10, 6, 1), wallMat); wall1.position.set(0, 3, -5); wall1.castShadow = true;
+                const wall2 = new THREE.Mesh(new THREE.BoxGeometry(1, 6, 10), wallMat); wall2.position.set(-5, 3, 0); wall2.castShadow = true;
+                ruin.add(wall1); ruin.add(wall2); ruin.position.set(-30, 0, 30); this.scene.add(ruin);
+                this.collidables.push(new THREE.Box3().setFromObject(ruin));
 
-                    const sx = i === 0 ? -8 : 8; const sz = -15;
-                    car.position.set(sx, getTerrainHeight(sx, sz), sz);
-                    if (i === 1) { car.rotation.z = Math.PI / 2; car.position.y += 1.5; } 
-                    else { car.rotation.y = Math.PI / 4; }
-                    
-                    this.scene.add(car);
-                    this.collidables.push(new THREE.Box3().setFromObject(car));
+                for(let i=0; i<4; i++) {
+                    const px = (Math.random()-0.5)*60; const pz = (Math.random()-0.5)*60;
+                    const py = Math.sin(px*0.05)*Math.cos(pz*0.05)*3;
+                    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,8), new THREE.MeshStandardMaterial({color:0x333333}));
+                    pole.position.set(px, py+4, pz); this.scene.add(pole);
+                    const light = new THREE.PointLight(0xffaa00, 2, 20);
+                    light.position.set(px, py+8, pz); this.scene.add(light);
+                    setInterval(() => { light.intensity = Math.random() > 0.8 ? 2 : 0; }, Math.random()*200+100);
                 }
-            }
-
-            buildGate() {
-                const gateGroup = new THREE.Group();
-                const gateMesh = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 0.5), new THREE.MeshStandardMaterial({color: 0x555555}));
-                gateMesh.position.y = 3; gateMesh.castShadow = true; gateGroup.add(gateMesh);
-                this.gatePos.set(0, getTerrainHeight(0, -30), -30);
-                gateGroup.position.copy(this.gatePos);
-                this.scene.add(gateGroup); this.gate = gateGroup;
-                this.gateCollider = new THREE.Box3().setFromObject(gateGroup);
-                this.collidables.push(this.gateCollider);
-
-                const fuseBox = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 0.5), new THREE.MeshStandardMaterial({color: 0x888800}));
-                this.fuseBoxPos.set(10, getTerrainHeight(10, -25) + 1, -25);
-                fuseBox.position.copy(this.fuseBoxPos); fuseBox.castShadow = true; this.scene.add(fuseBox);
             }
 
             buildItems() {
                 const padGeo = new THREE.BoxGeometry(0.4, 0.5, 0.1);
-                const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1 });
-                
+                const padMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
                 for(let i=0; i<5; i++) {
                     const pad = new THREE.Mesh(padGeo, padMat);
-                    const x = (Math.random()-0.5)*60; const z = (Math.random()-0.5)*60;
-                    pad.position.set(x, getTerrainHeight(x, z) + 1, z);
-                    pad.userData = { type: 'datapad', id: i + 1 };
+                    const x = (Math.random()-0.5)*80; const z = (Math.random()-0.5)*80;
+                    pad.position.set(x, Math.sin(x*0.05)*Math.cos(z*0.05)*3 + 1, z);
+                    pad.userData = { type: 'datapad', id: i+1 };
                     this.scene.add(pad); this.collectibles.push(pad);
                 }
-
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.6), new THREE.MeshStandardMaterial({color: 0xffff00, emissive: 0xaaaa00}));
-                const fx = 20, fz = 10;
-                fuse.position.set(fx, getTerrainHeight(fx, fz) + 1, fz);
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.6), new THREE.MeshStandardMaterial({color:0xffff00, emissive:0xaaaa00}));
+                fuse.position.set(20, Math.sin(20*0.05)*Math.cos(10*0.05)*3 + 1, 10);
                 fuse.rotation.z = Math.PI/2; fuse.userData = { type: 'fuse' };
                 this.scene.add(fuse); this.collectibles.push(fuse);
             }
 
-            interact(playerPos, narrative) {
-                if (playerPos.distanceTo(this.fuseBoxPos) < 3.5) {
-                    if (this.state.hasFuse && !this.state.gateOpen) {
-                        this.state.gateOpen = true;
-                        this.scene.remove(this.gate);
-                        this.collidables = this.collidables.filter(b => b !== this.gateCollider);
-                        narrative.triggerRadio("Energia restaurada! O portão está aberto, corra!");
-                    }
+            updateLighting() {
+                if (this.state.act === 1) {
+                    this.scene.background = new THREE.Color(0x87CEEB); this.scene.fog = new THREE.FogExp2(0x87CEEB, 0.01);
+                    this.sunLight.color.setHex(0xffffee); this.sunLight.intensity = 2; this.hemiLight.intensity = 1;
+                    this.rain.visible = false;
+                } else if (this.state.act === 2) {
+                    this.scene.background = new THREE.Color(0xff8c00); this.scene.fog = new THREE.FogExp2(0xff8c00, 0.02);
+                    this.sunLight.color.setHex(0xffaa00); this.sunLight.intensity = 1; this.hemiLight.intensity = 0.5;
+                    this.rain.visible = true;
+                } else {
+                    this.scene.background = new THREE.Color(0x050510); this.scene.fog = new THREE.FogExp2(0x050510, 0.04);
+                    this.sunLight.color.setHex(0x334466); this.sunLight.intensity = 0.2; this.hemiLight.intensity = 0.1;
+                    this.rain.visible = true;
                 }
             }
 
-            update(time) {
+            update(time, delta) {
                 this.collectibles.forEach(item => {
                     item.rotation.y = time * 2;
-                    item.position.y = getTerrainHeight(item.position.x, item.position.z) + 1 + Math.sin(time * 4) * 0.2;
+                    item.position.y = Math.sin(item.position.x*0.05)*Math.cos(item.position.z*0.05)*3 + 1 + Math.sin(time*4)*0.2;
                 });
+                if(this.rain.visible) {
+                    const pos = this.rain.geometry.attributes.position.array;
+                    for(let i=1; i<this.rainCount*3; i+=3) {
+                        pos[i] -= 30 * delta; if(pos[i] < 0) pos[i] = 50;
+                    }
+                    this.rain.geometry.attributes.position.needsUpdate = true;
+                }
             }
         }
 
         // ==========================================
-        // IA BASE (COMPARTILHADA)
+        // DINOSSAUROS
         // ==========================================
         class BaseDino {
-            constructor(scene, player, gameState, modelUrl, scale, speed, detectionRadius) {
-                this.scene = scene; this.player = player; this.state = gameState;
-                this.group = new THREE.Group();
-                this.mixer = null;
-                this.speed = speed; this.patrolSpeed = 2;
-                this.detectionRadius = detectionRadius;
+            constructor(scene, player, state, url, scale, speed, vision) {
+                this.scene = scene; this.player = player; this.state = state;
+                this.group = new THREE.Group(); this.mixer = null;
+                this.speed = speed; this.patrolSpeed = 2; this.vision = vision;
+                this.direction = new THREE.Vector3(); this.targetNode = new THREE.Vector3();
+                this.aiState = 'PATROL'; this.roarTimer = 0; this.cameraShake = 0;
                 
-                this.direction = new THREE.Vector3();
-                this.targetNode = new THREE.Vector3();
-                this.aiState = 'PATROL';
                 this.pickNewTarget();
-
-                this.raycaster = new THREE.Raycaster();
-                this.downVector = new THREE.Vector3(0, -1, 0);
+                this.raycaster = new THREE.Raycaster(); this.downVector = new THREE.Vector3(0,-1,0);
 
                 const loader = new GLTFLoader();
-                loader.load(modelUrl, (gltf) => {
-                    this.model = gltf.scene;
-                    this.model.scale.set(scale, scale, scale);
-                    this.model.traverse((c) => { if(c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+                loader.load(url, (gltf) => {
+                    this.model = gltf.scene; this.model.scale.set(scale, scale, scale);
+                    this.model.traverse(c => { if(c.isMesh) { c.castShadow = true; } });
                     this.group.add(this.model);
-                    
-                    if (gltf.animations && gltf.animations.length > 0) {
+                    if(gltf.animations.length) {
                         this.mixer = new THREE.AnimationMixer(this.model);
                         this.mixer.clipAction(gltf.animations[0]).play();
                     }
@@ -574,36 +433,44 @@
                     const box = new THREE.Mesh(new THREE.BoxGeometry(2,3,4), new THREE.MeshBasicMaterial({color:0xff0000}));
                     box.position.y = 1.5; this.group.add(box);
                 });
-
                 this.scene.add(this.group);
             }
 
             pickNewTarget() {
-                const x = (Math.random() - 0.5) * 80; const z = (Math.random() - 0.5) * 80;
-                this.targetNode.set(x, getTerrainHeight(x, z), z);
+                if(this.constructor.name === 'RaptorAI' && this.aiState === 'CHASE') {
+                    const offset = new THREE.Vector3((Math.random()-0.5)*20, 0, (Math.random()-0.5)*20);
+                    this.targetNode.copy(this.player.camera.position).add(offset);
+                } else {
+                    const x = (Math.random()-0.5)*80; const z = (Math.random()-0.5)*80;
+                    this.targetNode.set(x, 0, z);
+                }
             }
 
-            update(delta, time) {
+            update(delta, time, audio) {
                 if (this.player.state.isGameOver || !this.group.parent) return;
                 if (this.mixer) this.mixer.update(delta);
 
-                const distToPlayer = this.group.position.distanceTo(this.player.camera.position);
-                const isPlayerHiding = this.player.isCrouching && !this.player.isFlashlightOn;
-                
-                let currentDetect = this.detectionRadius;
-                if (isPlayerHiding) currentDetect = 0; 
-                else if (this.player.isMoving && this.constructor.name === 'TRexAI') currentDetect *= 1.5;
+                const dist = this.group.position.distanceTo(this.player.camera.position);
+                const isHiding = this.player.isCrouching && !this.player.isFlashlightOn;
+                let currentVision = isHiding ? 0 : this.vision;
 
-                const canSeePlayer = distToPlayer < currentDetect;
+                if (dist < currentVision) this.aiState = 'CHASE';
+                else if (dist > currentVision * 2) this.aiState = 'PATROL';
 
-                if (canSeePlayer) this.aiState = 'CHASE';
-                else if (distToPlayer > currentDetect * 2) this.aiState = 'PATROL';
+                if (this.aiState === 'CHASE' && dist < 15) {
+                    document.getElementById('danger-alert').classList.remove('hidden');
+                    if (this.constructor.name === 'TRexAI' && this.roarTimer <= 0) {
+                        audio.playRoar(); this.roarTimer = 5; this.cameraShake = 1.0;
+                    }
+                } else {
+                    document.getElementById('danger-alert').classList.add('hidden');
+                }
+                if (this.roarTimer > 0) this.roarTimer -= delta;
 
                 if (this.aiState === 'CHASE') {
                     this.direction.subVectors(this.player.camera.position, this.group.position).setY(0).normalize();
                     this.group.position.addScaledVector(this.direction, this.speed * delta);
-                    
-                    if (distToPlayer < 4) {
+                    if (dist < 3) {
                         this.player.state.isGameOver = true;
                         document.getElementById('game-over-screen').classList.remove('hidden');
                         document.exitPointerLock();
@@ -618,8 +485,7 @@
                 }
 
                 if (this.direction.length() > 0) {
-                    const lookAtPos = this.group.position.clone().add(this.direction);
-                    this.group.rotation.y = Math.atan2(lookAtPos.x - this.group.position.x, lookAtPos.z - this.group.position.z);
+                    this.group.rotation.y = Math.atan2(this.direction.x, this.direction.z);
                 }
 
                 this.raycaster.set(this.group.position.clone().setY(50), this.downVector);
@@ -627,20 +493,8 @@
                 if (intersects.length > 0) this.group.position.y = intersects[0].point.y;
             }
         }
-
-        class RaptorAI extends BaseDino {
-            constructor(scene, player, state) {
-                super(scene, player, state, './archie_the_velociraptor.glb', 1.0, 9, 18);
-                this.group.position.set(20, 0, 20);
-            }
-        }
-
-        class TRexAI extends BaseDino {
-            constructor(scene, player, state) {
-                super(scene, player, state, './t_rex.glb', 1.5, 6, 30);
-                this.group.position.set(0, 0, -40);
-            }
-        }
+        class RaptorAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './archie_the_velociraptor.glb', 1.0, 9, 15); this.group.position.set(20,0,20); } }
+        class TRexAI extends BaseDino { constructor(s,p,st) { super(s,p,st, './t_rex.glb', 1.5, 6, 25); this.group.position.set(0,0,-40); } }
 
         // ==========================================
         // JOGADOR
@@ -650,137 +504,112 @@
                 this.camera = camera; this.scene = scene; this.collidables = collidables; this.state = state;
                 this.controls = new PointerLockControls(camera, document.body);
                 this.velocity = new THREE.Vector3();
-                this.moveForward = false; this.moveBackward = false; this.moveLeft = false; this.moveRight = false;
+                this.moveF = false; this.moveB = false; this.moveL = false; this.moveR = false;
                 this.isCrouching = false; this.isMoving = false;
-                
-                this.playerBox = new THREE.Box3();
-                this.hitboxSize = new THREE.Vector3(1, 2, 1);
+                this.playerBox = new THREE.Box3(); this.hitboxSize = new THREE.Vector3(1,2,1);
 
                 this.flashlight = new THREE.SpotLight(0xffffff, 15, 45, Math.PI / 5, 0.4, 1.5);
-                this.flashlight.castShadow = true;
-                this.camera.add(this.flashlight);
-                this.flashlightTarget = new THREE.Object3D();
-                this.scene.add(this.flashlightTarget);
-                this.flashlight.target = this.flashlightTarget;
-                this.flashlight.visible = false;
+                this.flashlight.castShadow = true; this.camera.add(this.flashlight);
+                this.flashlightTarget = new THREE.Object3D(); this.scene.add(this.flashlightTarget);
+                this.flashlight.target = this.flashlightTarget; this.flashlight.visible = false;
 
                 this.battery = 100; this.isFlashlightOn = false;
                 this.batteryFill = document.getElementById('battery-fill');
 
-                this.raycaster = new THREE.Raycaster();
-                this.downVector = new THREE.Vector3(0, -1, 0);
+                this.raycaster = new THREE.Raycaster(); this.downVector = new THREE.Vector3(0,-1,0);
 
-                this.setupEvents();
+                document.addEventListener('keydown', e => this.onKeyDown(e));
+                document.addEventListener('keyup', e => this.onKeyUp(e));
             }
 
-            setupEvents() {
-                document.addEventListener('keydown', (e) => this.onKeyDown(e));
-                document.addEventListener('keyup', (e) => this.onKeyUp(e));
-            }
-
-            onKeyDown(event) {
-                if (this.state.isGameOver || this.state.isWin || this.state.isCinematic) return;
-                switch (event.code) {
-                    case 'KeyW': this.moveForward = true; break;
-                    case 'KeyS': this.moveBackward = true; break;
-                    case 'KeyA': this.moveLeft = true; break;
-                    case 'KeyD': this.moveRight = true; break;
-                    case 'ShiftLeft':
-                        this.isCrouching = true; this.camera.position.y = 1; this.hitboxSize.y = 1;
-                        break;
-                    case 'KeyF':
-                        if (this.battery > 0) {
-                            this.isFlashlightOn = !this.isFlashlightOn;
-                            this.flashlight.visible = this.isFlashlightOn;
-                        }
-                        break;
+            onKeyDown(e) {
+                if (this.state.isGameOver || this.state.isWin || this.state.isCinematic || this.state.isPaused || this.state.isMenuActive) return;
+                switch (e.code) {
+                    case 'KeyW': this.moveF = true; break;
+                    case 'KeyS': this.moveB = true; break;
+                    case 'KeyA': this.moveL = true; break;
+                    case 'KeyD': this.moveR = true; break;
+                    case 'ShiftLeft': this.isCrouching = true; this.camera.position.y = 1; this.hitboxSize.y = 1; break;
+                    case 'KeyF': if(this.battery > 0) { this.isFlashlightOn = !this.isFlashlightOn; this.flashlight.visible = this.isFlashlightOn; } break;
+                    case 'Escape': if(!this.state.isCinematic) { document.getElementById('pause-menu').classList.remove('hidden'); this.state.isPaused = true; document.exitPointerLock(); } break;
                 }
             }
 
-            onKeyUp(event) {
-                switch (event.code) {
-                    case 'KeyW': this.moveForward = false; break;
-                    case 'KeyS': this.moveBackward = false; break;
-                    case 'KeyA': this.moveLeft = false; break;
-                    case 'KeyD': this.moveRight = false; break;
-                    case 'ShiftLeft':
-                        this.isCrouching = false; this.camera.position.y = 2; this.hitboxSize.y = 2;
-                        break;
+            onKeyUp(e) {
+                switch (e.code) {
+                    case 'KeyW': this.moveF = false; break;
+                    case 'KeyS': this.moveB = false; break;
+                    case 'KeyA': this.moveL = false; break;
+                    case 'KeyD': this.moveR = false; break;
+                    case 'ShiftLeft': this.isCrouching = false; this.camera.position.y = 2; this.hitboxSize.y = 2; break;
                 }
             }
 
-            update(delta, time, environment, narrative) {
-                if (!this.controls.isLocked || this.state.isGameOver || this.state.isCinematic) return;
+            update(delta, time, env, narrative) {
+                if (!this.controls.isLocked || this.state.isGameOver || this.state.isPaused || this.state.isMenuActive) return;
 
                 const damping = 10.0;
                 this.velocity.x -= this.velocity.x * damping * delta;
                 this.velocity.z -= this.velocity.z * damping * delta;
 
-                const dirZ = Number(this.moveForward) - Number(this.moveBackward);
-                const dirX = Number(this.moveRight) - Number(this.moveLeft);
+                const dirZ = Number(this.moveF) - Number(this.moveB);
+                const dirX = Number(this.moveR) - Number(this.moveL);
                 const speed = this.isCrouching ? 10.0 : 25.0;
 
                 this.velocity.z -= dirZ * speed * delta;
                 this.velocity.x -= dirX * speed * delta;
-
                 this.isMoving = (dirZ !== 0 || dirX !== 0);
 
                 const oldPos = this.camera.position.clone();
-                this.controls.moveRight(-this.velocity.x * delta);
-                this.controls.moveForward(-this.velocity.z * delta);
+                this.controls.moveRight(-this.velocity.x * delta * mouseSensitivity);
+                this.controls.moveForward(-this.velocity.z * delta * mouseSensitivity);
 
                 this.playerBox.setFromCenterAndSize(new THREE.Vector3(this.camera.position.x, this.camera.position.y - 1, this.camera.position.z), this.hitboxSize);
-
                 let collision = false;
                 this.collidables.forEach(box => { if (this.playerBox.intersectsBox(box)) collision = true; });
-
-                if (collision) { this.camera.position.copy(oldPos); this.velocity.set(0, 0, 0); }
+                if (collision) { this.camera.position.copy(oldPos); this.velocity.set(0,0,0); }
 
                 this.raycaster.set(this.camera.position.clone().setY(this.camera.position.y + 5), this.downVector);
                 const intersects = this.raycaster.intersectObjects(this.scene.children, true);
-                if (intersects.length > 0) {
-                    this.camera.position.y = intersects[0].point.y + (this.isCrouching ? 1 : 2);
-                }
+                if (intersects.length > 0) this.camera.position.y = intersects[0].point.y + (this.isCrouching ? 1 : 2);
 
                 if (this.isFlashlightOn && this.battery > 0) {
-                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+                    const forward = new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion);
                     const targetPos = this.camera.position.clone().add(forward.multiplyScalar(10));
-                    targetPos.x += Math.sin(time * 8) * 0.3; targetPos.y += Math.cos(time * 6) * 0.3;
+                    targetPos.x += Math.sin(time*8)*0.3; targetPos.y += Math.cos(time*6)*0.3;
                     this.flashlightTarget.position.lerp(targetPos, 0.5);
                     
                     this.battery -= 1.0 * delta;
                     this.batteryFill.style.width = `${Math.max(0, this.battery)}%`;
+                    if (this.battery < 20) this.batteryFill.style.backgroundColor = 'red';
                     if (this.battery <= 0) { this.battery = 0; this.isFlashlightOn = false; this.flashlight.visible = false; }
                 }
 
-                this.checkInteraction(environment, narrative);
+                this.checkInteraction(env, narrative);
             }
 
-            checkInteraction(environment, narrative) {
+            checkInteraction(env, narrative) {
                 const prompt = document.getElementById('interaction-prompt');
                 let canInteract = false;
 
-                for (let i = environment.collectibles.length - 1; i >= 0; i--) {
-                    const item = environment.collectibles[i];
+                for (let i = env.collectibles.length - 1; i >= 0; i--) {
+                    const item = env.collectibles[i];
                     if (this.camera.position.distanceTo(item.position) < 3) {
                         canInteract = true; prompt.classList.remove('hidden');
                         if (window.keys['KeyE']) {
                             if (item.userData.type === 'datapad') narrative.showDataPad(item.userData.id);
                             else if (item.userData.type === 'fuse') { this.state.hasFuse = true; narrative.updateHUD(); }
-                            environment.scene.remove(item); environment.collectibles.splice(i, 1);
+                            env.scene.remove(item); env.collectibles.splice(i, 1);
                             window.keys['KeyE'] = false; break;
                         }
                     }
                 }
 
-                if (this.camera.position.distanceTo(environment.fuseBoxPos) < 3.5) {
+                if (this.camera.position.distanceTo(env.fuseBoxPos) < 3.5) {
                     canInteract = true; prompt.classList.remove('hidden'); prompt.innerText = "[E] Colocar Fusível";
                     if (window.keys['KeyE']) {
-                        environment.interact(this.camera.position, narrative);
-                        if (this.state.gateOpen && this.state.datapads === 5) {
-                            this.state.isWin = true;
-                            document.getElementById('win-screen').classList.remove('hidden');
-                            document.exitPointerLock();
+                        if (this.state.hasFuse && !this.state.gateOpen) {
+                            this.state.gateOpen = true; narrative.updateHUD(); narrative.triggerRadio("Energia restaurada! O portão abriu.");
                         }
                         window.keys['KeyE'] = false;
                     }
@@ -789,99 +618,203 @@
             }
         }
 
-        window.keys = {};
-        document.addEventListener('keydown', e => window.keys[e.code] = true);
-        document.addEventListener('keyup', e => window.keys[e.code] = false);
+        // ==========================================
+        // NARRATIVA
+        // ==========================================
+        class NarrativeManager {
+            constructor(state) {
+                this.state = state; this.radioText = document.getElementById('radio-text');
+                this.modalUI = document.getElementById('ui-modal'); this.subtitle = document.getElementById('subtitle');
+                this.objPads = document.getElementById('obj-pads'); this.actIndicator = document.getElementById('act-indicator');
+            }
+            updateHUD() {
+                this.objPads.innerText = `Data Pads: ${this.state.datapads}/5`;
+                if(this.state.act === 1) this.actIndicator.innerText = "ATO I - TARDE";
+                if(this.state.act === 2) this.actIndicator.innerText = "ATO II - ENTARDECER";
+                if(this.state.act === 3) this.actIndicator.innerText = "ATO III - NOITE";
+            }
+            triggerRadio(txt) { this.radioText.innerText = txt; setTimeout(() => this.radioText.innerText = "", 6000); }
+            showDataPad(id) {
+                if(this.state.datapads >= 5) return;
+                this.state.datapads++; this.updateHUD();
+                this.modalUI.querySelector('#modal-text').innerText = `LOG 0${id}: Dados recuperados com sucesso.`;
+                this.modalUI.classList.remove('hidden'); document.exitPointerLock();
+                if(this.state.datapads === 2) { this.state.act = 2; this.updateHUD(); }
+                if(this.state.datapads === 4) { this.state.act = 3; this.updateHUD(); }
+            }
+        }
 
         // ==========================================
         // LOOP PRINCIPAL
         // ==========================================
+        window.keys = {};
+        document.addEventListener('keydown', e => window.keys[e.code] = true);
+        document.addEventListener('keyup', e => window.keys[e.code] = false);
+
         class Game {
             constructor() {
-                this.container = document.getElementById('game-container');
                 this.scene = new THREE.Scene();
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 300);
-                this.camera.position.set(0, 2, 10);
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 300);
+                
+                // Posição inicial para o Menu (visão aérea do mapa)
+                this.camera.position.set(30, 15, 30);
+                this.camera.lookAt(0, 0, 0);
 
                 this.renderer = new THREE.WebGLRenderer({ antialias: false });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setPixelRatio(0.5); 
-                this.renderer.shadowMap.enabled = true;
-                this.renderer.shadowMap.type = THREE.BasicShadowMap; 
-                this.container.appendChild(this.renderer.domElement);
+                this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.BasicShadowMap; 
+                document.getElementById('game-container').appendChild(this.renderer.domElement);
 
-                this.clock = new THREE.Clock();
-                this.gameState = new GameState();
+                this.clock = new THREE.Clock(); this.state = new GameState();
+                this.audio = null;
                 
-                this.init();
-            }
-
-            init() {
-                this.narrative = new NarrativeManager(this.gameState, this.camera);
-                this.environment = new Environment(this.scene, this.gameState, this.narrative);
-                this.player = new Player(this.camera, this.scene, this.environment.collidables, this.gameState);
+                // Inicializa o mundo imediatamente (para aparecer no fundo do menu)
+                this.narrative = new NarrativeManager(this.state);
+                this.environment = new Environment(this.scene, this.state, this.narrative);
+                this.player = new Player(this.camera, this.scene, this.environment.collidables, this.state);
+                this.raptor = null; this.trex = null;
                 
-                this.raptor = null;
-                this.trex = null;
-
-                this.environment.updateLighting();
-
-                // Botão do Menu para iniciar o jogo
-                document.getElementById('start-btn').addEventListener('click', () => {
-                    const menu = document.getElementById('main-menu');
-                    menu.style.opacity = '0';
-                    
-                    setTimeout(() => {
-                        menu.classList.add('hidden');
-                        document.getElementById('hud').classList.remove('hidden');
-                        
-                        this.narrative.playIntroCutscene(() => {
-                            this.player.controls.lock();
-                            this.narrative.triggerRadio("Vance, comece a procurar os dados. O tempo está contra nós.");
-                        });
-                    }, 1000); // Tempo para a transição de fade
-                });
-
-                window.addEventListener('resize', () => this.onWindowResize());
+                this.menuAngle = 0;
+                this.initUI();
                 this.animate();
             }
 
-            onWindowResize() {
-                this.camera.aspect = window.innerWidth / window.innerHeight;
-                this.camera.updateProjectionMatrix();
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            initUI() {
+                const updateLang = () => {
+                    document.getElementById('btn-start').innerText = I18N[currentLang].start;
+                    document.getElementById('btn-load').innerText = I18N[currentLang].load;
+                    document.getElementById('btn-settings').innerText = I18N[currentLang].settings;
+                    document.getElementById('btn-language').innerText = I18N[currentLang].lang;
+                    document.getElementById('btn-quit').innerText = I18N[currentLang].quit;
+                };
+                updateLang();
+
+                document.getElementById('btn-start').onclick = () => this.startGame(false);
+                document.getElementById('btn-language').onclick = () => { currentLang = currentLang === 'pt' ? 'en' : 'pt'; localStorage.setItem('jp_lang', currentLang); updateLang(); };
+                document.getElementById('btn-settings').onclick = () => { document.getElementById('settings-menu').classList.remove('hidden'); };
+                document.getElementById('btn-close-settings').onclick = () => { document.getElementById('settings-menu').classList.add('hidden'); };
+                document.getElementById('btn-quit').onclick = () => { if(confirm("Deseja realmente sair?")) window.close(); };
+                
+                document.getElementById('sens-slider').oninput = (e) => { mouseSensitivity = parseFloat(e.target.value); localStorage.setItem('jp_sens', mouseSensitivity); };
+                document.getElementById('vol-slider').oninput = (e) => { masterVolume = parseFloat(e.target.value); if(this.audio) this.audio.updateVolume(masterVolume); localStorage.setItem('jp_vol', masterVolume); };
+
+                document.getElementById('btn-load').onclick = () => {
+                    const save = localStorage.getItem('jp_save');
+                    if(save) this.startGame(true, JSON.parse(save));
+                    else alert("Nenhum jogo salvo encontrado.");
+                };
+
+                document.getElementById('btn-resume').onclick = () => { document.getElementById('pause-menu').classList.add('hidden'); this.state.isPaused = false; document.getElementById('game-container').requestPointerLock(); };
+                document.getElementById('btn-save').onclick = () => {
+                    const saveData = {
+                        act: this.state.act, datapads: this.state.datapads, hasFuse: this.state.hasFuse, gateOpen: this.state.gateOpen,
+                        pos: this.camera.position.toArray()
+                    };
+                    localStorage.setItem('jp_save', JSON.stringify(saveData));
+                    alert("Jogo Salvo com Sucesso!");
+                };
+                document.getElementById('btn-exit').onclick = () => location.reload();
+
+                window.addEventListener('resize', () => {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            startGame(isLoad, saveData = null) {
+                if (!this.state.isMenuActive) return; // Impede clique duplo
+                
+                if(!this.audio) this.audio = new AudioManager();
+                this.audio.updateVolume(masterVolume);
+
+                const menu = document.getElementById('main-menu');
+                menu.style.opacity = '0';
+                
+                setTimeout(() => {
+                    menu.classList.add('hidden');
+                    document.getElementById('hud').classList.remove('hidden');
+                    
+                    this.state.isMenuActive = false;
+                    this.camera.position.set(0, 2, 10); // Volta para a posição do jogador
+                    
+                    if (isLoad && saveData) {
+                        this.state.act = saveData.act; this.state.datapads = saveData.datapads;
+                        this.state.hasFuse = saveData.hasFuse; this.state.gateOpen = saveData.gateOpen;
+                        this.camera.position.fromArray(saveData.pos);
+                        this.narrative.updateHUD();
+                        this.player.controls.lock();
+                        this.narrative.triggerRadio("Jogo carregado. Cuidado lá fora.");
+                    } else {
+                        this.state.isCinematic = true;
+                        document.body.classList.add('cinematic-active');
+                        document.getElementById('subtitle').classList.remove('hidden');
+                        document.getElementById('subtitle').innerText = "Isla Nublar. 1994. O pesadelo começa.";
+                        
+                        setTimeout(() => {
+                            document.body.classList.remove('cinematic-active');
+                            document.getElementById('subtitle').classList.add('hidden');
+                            this.state.isCinematic = false;
+                            this.player.controls.lock();
+                            this.narrative.triggerRadio("Vance, encontre os 5 Data Pads e o fusível.");
+                        }, 5000);
+                    }
+                }, 500);
             }
 
             animate() {
                 requestAnimationFrame(() => this.animate());
+                if(this.state.isPaused) return;
+
                 const delta = Math.min(this.clock.getDelta(), 0.1);
                 const time = this.clock.getElapsedTime();
 
-                // Só roda a lógica se o menu já sumiu
-                if (!document.getElementById('main-menu').classList.contains('hidden')) return;
-
-                if (!this.gameState.isGameOver && !this.gameState.isWin) {
-                    this.player.update(delta, time, this.environment, this.narrative);
-                    this.environment.update(time);
+                // ===== LÓGICA DO MENU (Câmera orbitando o mapa) =====
+                if (this.state.isMenuActive) {
+                    this.menuAngle += delta * 0.1;
+                    this.camera.position.x = Math.sin(this.menuAngle) * 35;
+                    this.camera.position.z = Math.cos(this.menuAngle) * 35;
+                    this.camera.position.y = 15 + Math.sin(time * 0.5) * 2;
+                    this.camera.lookAt(0, 2, -10);
+                    
                     this.environment.updateLighting();
-
-                    if (this.gameState.act >= 2 && !this.raptor) {
-                        this.raptor = new RaptorAI(this.scene, this.player, this.gameState);
-                    }
-                    if (this.gameState.act === 3 && !this.trex) {
-                        this.trex = new TRexAI(this.scene, this.player, this.gameState);
-                    }
-
-                    if (this.raptor) this.raptor.update(delta, time);
-                    if (this.trex) {
-                        this.trex.update(delta, time);
-                        if (this.trex.group.position.distanceTo(this.camera.position) < 20) {
-                            this.camera.position.x += (Math.random() - 0.5) * 0.1;
-                            this.camera.position.z += (Math.random() - 0.5) * 0.1;
-                        }
-                    }
+                    this.environment.update(time, delta);
+                    this.renderer.render(this.scene, this.camera);
+                    return;
                 }
 
+                // ===== LÓGICA DO JOGO =====
+                if (!this.state.isGameOver && !this.state.isWin) {
+                    this.player.update(delta, time, this.environment, this.narrative);
+                    this.environment.updateLighting();
+                    this.environment.update(time, delta);
+
+                    if (this.state.act >= 2 && !this.raptor) this.raptor = new RaptorAI(this.scene, this.player, this.state);
+                    if (this.state.act === 3 && !this.trex) this.trex = new TRexAI(this.scene, this.player, this.state);
+
+                    if (this.raptor) this.raptor.update(delta, time, this.audio);
+                    if (this.trex) {
+                        this.trex.update(delta, time, this.audio);
+                        if (this.trex.cameraShake > 0) {
+                            this.camera.position.x += (Math.random()-0.5) * this.trex.cameraShake * 0.5;
+                            this.camera.position.y += (Math.random()-0.5) * this.trex.cameraShake * 0.5;
+                            this.trex.cameraShake -= delta * 2;
+                        }
+                    }
+
+                    if (this.environment.rain.visible && Math.random() < 0.005) {
+                        this.audio.playThunder();
+                        this.environment.sunLight.intensity = 5;
+                        setTimeout(() => this.environment.updateLighting(), 150);
+                    }
+
+                    if (this.state.gateOpen && this.state.datapads === 5 && this.camera.position.z < -40) {
+                        this.state.isWin = true;
+                        document.getElementById('win-screen').classList.remove('hidden');
+                        document.exitPointerLock();
+                    }
+                }
                 this.renderer.render(this.scene, this.camera);
             }
         }
